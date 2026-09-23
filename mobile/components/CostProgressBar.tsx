@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, DimensionValue } from 'react-native';
+import { Layers } from 'lucide-react-native';
 import { THEME } from '../constants/theme';
 
 interface CategoryCostItem {
@@ -24,7 +25,7 @@ const BAR_COLORS = [
 ];
 
 export const CostProgressBar: React.FC<CostProgressBarProps> = ({
-  title = 'Recorded sales',
+  title = 'Sales by category',
   total,
   items,
 }) => {
@@ -33,43 +34,56 @@ export const CostProgressBar: React.FC<CostProgressBarProps> = ({
 
   return (
     <View style={styles.card}>
+      {/* Uniform Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.totalText}>
-          Total{' '}
-          <Text style={styles.totalValue}>
-            ₹{calculatedTotal.toLocaleString('en-IN')}
+        <View>
+          <View style={styles.titleRow}>
+            <Layers size={16} color={THEME.colors.textPrimary} strokeWidth={2.4} />
+            <Text style={styles.title}>{title}</Text>
+          </View>
+          <Text style={styles.subtitle}>Volume distributed across product lines</Text>
+        </View>
+
+        <View style={styles.totalBadge}>
+          <Text style={styles.totalLabel}>
+            Total{' '}
+            <Text style={styles.totalValue}>
+              ₹{calculatedTotal.toLocaleString('en-IN')}
+            </Text>
           </Text>
-        </Text>
+        </View>
       </View>
 
-      <View style={styles.list}>
-        {items.map((item, index) => {
-          const percent = Math.min(Math.max(Math.round((item.amount / maxAmount) * 100), 6), 100);
-          const barColor = BAR_COLORS[index % BAR_COLORS.length];
-          return (
-            <View key={index} style={styles.row}>
-              <Text style={styles.label} numberOfLines={1}>
-                {item.label}
-              </Text>
-              <View style={styles.trackWrapper}>
-                <View style={styles.track}>
-                  <View
-                    style={[
-                      styles.fill,
-                      {
-                        width: `${percent}%` as DimensionValue,
-                        backgroundColor: barColor,
-                      },
-                    ]}
-                  />
+      {/* Uniform Body */}
+      <View style={styles.body}>
+        <View style={styles.list}>
+          {items.map((item, index) => {
+            const percent = Math.min(Math.max(Math.round((item.amount / maxAmount) * 100), 6), 100);
+            const barColor = BAR_COLORS[index % BAR_COLORS.length];
+            return (
+              <View key={index} style={styles.row}>
+                <Text style={styles.label} numberOfLines={1}>
+                  {item.label}
+                </Text>
+                <View style={styles.trackWrapper}>
+                  <View style={styles.track}>
+                    <View
+                      style={[
+                        styles.fill,
+                        {
+                          width: `${percent}%` as DimensionValue,
+                          backgroundColor: barColor,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.percent}>{percent}%</Text>
                 </View>
-                <Text style={styles.percent}>{percent}%</Text>
+                <Text style={styles.amount}>₹{item.amount.toLocaleString('en-IN')}</Text>
               </View>
-              <Text style={styles.amount}>₹{item.amount.toLocaleString('en-IN')}</Text>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -81,23 +95,47 @@ const styles = StyleSheet.create({
     borderRadius: THEME.radius.lg,
     borderWidth: 1,
     borderColor: THEME.colors.border,
-    padding: 16,
+    overflow: 'hidden',
     ...THEME.shadow.card,
   },
   header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.colors.borderSubtle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    backgroundColor: '#ffffff',
+    gap: 8,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   title: {
-    fontSize: THEME.fontSize.md,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     fontFamily: THEME.fontFamily.semibold,
     color: THEME.colors.textPrimary,
   },
-  totalText: {
-    fontSize: THEME.fontSize.base,
+  subtitle: {
+    fontSize: 12,
+    color: THEME.colors.textSecondary,
+    fontFamily: THEME.fontFamily.regular,
+    marginTop: 2,
+  },
+  totalBadge: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  totalLabel: {
+    fontSize: 11,
     color: THEME.colors.textSecondary,
     fontFamily: THEME.fontFamily.regular,
   },
@@ -106,17 +144,19 @@ const styles = StyleSheet.create({
     fontFamily: THEME.fontFamily.bold,
     color: THEME.colors.textPrimary,
   },
+  body: {
+    padding: 16,
+  },
   list: {
-    gap: 19.5,
+    gap: 16,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 0,
   },
   label: {
-    width: 96,
-    fontSize: THEME.fontSize.base,
+    width: 100,
+    fontSize: 13,
     color: THEME.colors.textSecondary,
     fontWeight: '500',
     fontFamily: THEME.fontFamily.medium,
@@ -131,7 +171,7 @@ const styles = StyleSheet.create({
   track: {
     flex: 1,
     height: 8,
-    backgroundColor: THEME.colors.secondary,
+    backgroundColor: '#f1f5f9',
     borderRadius: THEME.radius.full,
     overflow: 'hidden',
   },
@@ -140,17 +180,17 @@ const styles = StyleSheet.create({
     borderRadius: THEME.radius.full,
   },
   percent: {
-    fontSize: THEME.fontSize.xs,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
     fontFamily: THEME.fontFamily.medium,
     color: THEME.colors.textMuted,
     width: 32,
     textAlign: 'right',
   },
   amount: {
-    minWidth: 82,
+    minWidth: 86,
     textAlign: 'right',
-    fontSize: THEME.fontSize.base,
+    fontSize: 13,
     fontWeight: '700',
     fontFamily: THEME.fontFamily.bold,
     color: THEME.colors.textPrimary,

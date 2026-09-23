@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: THEME.fontSize.md,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     fontFamily: THEME.fontFamily.semibold,
     color: THEME.colors.textPrimary,
   },

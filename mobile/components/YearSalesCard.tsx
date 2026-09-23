@@ -115,13 +115,13 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
   );
 
   // SVG Chart Geometry
-  const cardPadding = 14;
-  const chartWidth = Math.max(containerWidth - cardPadding * 2, 280);
-  const chartHeight = 170;
-  const padLeft = 46;
-  const padRight = 14;
-  const padBottom = 26;
-  const padTop = 18;
+  const cardBodyPadding = 16;
+  const chartWidth = Math.max(containerWidth - cardBodyPadding * 2, 260);
+  const chartHeight = 150;
+  const padLeft = 44;
+  const padRight = 12;
+  const padBottom = 24;
+  const padTop = 16;
 
   const innerW = chartWidth - padLeft - padRight;
   const innerH = chartHeight - padTop - padBottom;
@@ -144,7 +144,7 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
 
   return (
     <View style={styles.card} onLayout={onLayout}>
-      {/* Header */}
+      {/* Uniform Header */}
       <View style={styles.header}>
         <View>
           <View style={styles.titleRow}>
@@ -237,188 +237,188 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
         </View>
       </View>
 
-      {/* Hero Metric */}
-      <View style={styles.heroRow}>
-        <View>
-          <Text style={styles.revenueAmount}>
-            ₹{displayTotal.toLocaleString('en-IN')}
-          </Text>
-          <Text style={styles.revenueSub}>
-            {selectedYear === '2026'
-              ? `YTD recorded revenue (${totalOrders} orders)`
-              : `FY 2025 total revenue`}
-          </Text>
-        </View>
-
-        {activeItem ? (
-          <View style={styles.activeInspectBadge}>
-            <Text style={styles.activeInspectLabel}>{activeItem.label}</Text>
-            <Text style={styles.activeInspectVal}>
-              ₹{activeItem.revenue.toLocaleString('en-IN')}
+      {/* Uniform Body */}
+      <View style={styles.body}>
+        {/* Hero Metric */}
+        <View style={styles.heroRow}>
+          <View>
+            <Text style={styles.revenueAmount}>
+              ₹{displayTotal.toLocaleString('en-IN')}
+            </Text>
+            <Text style={styles.revenueSub}>
+              {selectedYear === '2026'
+                ? `YTD recorded revenue (${totalOrders} orders)`
+                : `FY 2025 total revenue`}
             </Text>
           </View>
-        ) : (
-          <View style={styles.peakInspectBadge}>
-            <Award size={12} color="#047857" strokeWidth={2.5} />
-            <Text style={styles.peakInspectText}>
-              Peak: {peakItem.label} ({formatShortINR(peakItem.revenue)})
-            </Text>
-          </View>
-        )}
-      </View>
 
-      {/* Target Progress Bar */}
-      <View style={styles.targetWrap}>
-        <View style={styles.targetInfo}>
-          <View style={styles.targetLabelRow}>
-            <Target size={12} color={THEME.colors.textSecondary} />
-            <Text style={styles.targetLabel}>
-              Target: {formatShortINR(displayTarget)}
-            </Text>
-          </View>
-          <Text style={styles.targetPercentage}>{progressPercent}% achieved</Text>
+          {activeItem ? (
+            <View style={styles.activeInspectBadge}>
+              <Text style={styles.activeInspectLabel}>{activeItem.label}</Text>
+              <Text style={styles.activeInspectVal}>
+                ₹{activeItem.revenue.toLocaleString('en-IN')}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.peakInspectBadge}>
+              <Award size={12} color="#047857" strokeWidth={2.5} />
+              <Text style={styles.peakInspectText}>
+                Peak: {peakItem.label} ({formatShortINR(peakItem.revenue)})
+              </Text>
+            </View>
+          )}
         </View>
-        <View style={styles.targetTrack}>
-          <View
-            style={[styles.targetFill, { width: `${progressPercent}%` }]}
-          />
+
+        {/* Target Progress Bar */}
+        <View style={styles.targetWrap}>
+          <View style={styles.targetInfo}>
+            <View style={styles.targetLabelRow}>
+              <Target size={12} color={THEME.colors.textSecondary} />
+              <Text style={styles.targetLabel}>
+                Target: {formatShortINR(displayTarget)}
+              </Text>
+            </View>
+            <Text style={styles.targetPercentage}>{progressPercent}% achieved</Text>
+          </View>
+          <View style={styles.targetTrack}>
+            <View
+              style={[styles.targetFill, { width: `${progressPercent}%` }]}
+            />
+          </View>
         </View>
-      </View>
 
-      {/* Vertical Bar Chart Graph */}
-      <View style={styles.chartWrapper}>
-        <Svg width={chartWidth} height={chartHeight}>
-          {/* Horizontal Grid lines and Y-axis labels */}
-          {yTicks.map((tick, i) => (
-            <G key={`tick-${i}`}>
-              <Line
-                x1={padLeft}
-                y1={tick.y}
-                x2={chartWidth - padRight}
-                y2={tick.y}
-                stroke="#e2e8f0"
-                strokeWidth={1}
-                strokeDasharray={i > 0 && i < yTicks.length - 1 ? '4,4' : undefined}
-              />
-              <SvgText
-                x={padLeft - 6}
-                y={tick.y + 3.5}
-                fontSize={10}
-                fontWeight="500"
-                fill="#94a3b8"
-                textAnchor="end"
-              >
-                {formatShortINR(tick.value)}
-              </SvgText>
-            </G>
-          ))}
-
-          {/* Vertical Bars */}
-          {chartItems.map((item, idx) => {
-            const count = chartItems.length;
-            const slotW = innerW / count;
-            const barW = Math.min(Math.max(slotW * 0.62, 14), 32);
-            const x = padLeft + idx * slotW + (slotW - barW) / 2;
-
-            const barH =
-              maxVal > 0 ? (item.revenue / maxVal) * innerH : 0;
-            const y = padTop + innerH - barH;
-
-            const isPeak = item.label === peakItem.label;
-            const isSelected = activeIdx === idx;
-
-            // Bar fill color logic
-            let barColor = '#334155'; // default slate-700
-            if (isSelected) {
-              barColor = '#2563eb'; // blue-600 active
-            } else if (isPeak) {
-              barColor = '#0f172a'; // slate-900 peak
-            } else if (item.revenue === 0) {
-              barColor = '#f1f5f9';
-            }
-
-            return (
-              <G
-                key={`bar-${item.label}-${idx}`}
-                onPress={() => setActiveIdx(activeIdx === idx ? null : idx)}
-              >
-                {/* Background hover touch area */}
-                <Rect
-                  x={padLeft + idx * slotW}
-                  y={padTop}
-                  width={slotW}
-                  height={innerH}
-                  fill="transparent"
+        {/* Vertical Bar Chart Graph */}
+        <View style={styles.chartWrapper}>
+          <Svg width={chartWidth} height={chartHeight}>
+            {/* Horizontal Grid lines and Y-axis labels */}
+            {yTicks.map((tick, i) => (
+              <G key={`tick-${i}`}>
+                <Line
+                  x1={padLeft}
+                  y1={tick.y}
+                  x2={chartWidth - padRight}
+                  y2={tick.y}
+                  stroke="#e2e8f0"
+                  strokeWidth={1}
+                  strokeDasharray={
+                    i > 0 && i < yTicks.length - 1 ? '4,4' : undefined
+                  }
                 />
-
-                {/* Main Vertical Bar */}
-                {barH > 0 && (
-                  <Rect
-                    x={x}
-                    y={y}
-                    width={barW}
-                    height={barH}
-                    rx={3}
-                    fill={barColor}
-                  />
-                )}
-
-                {/* Peak Indicator Dot above the highest bar */}
-                {isPeak && barH > 0 && (
-                  <Rect
-                    x={x + barW / 2 - 2}
-                    y={y - 6}
-                    width={4}
-                    height={4}
-                    rx={2}
-                    fill="#10b981"
-                  />
-                )}
-
-                {/* X-axis Month / Quarter Label */}
                 <SvgText
-                  x={x + barW / 2}
-                  y={chartHeight - 6}
-                  fontSize={10.5}
-                  fontWeight={isSelected || isPeak ? '700' : '500'}
-                  fill={isSelected ? '#2563eb' : isPeak ? '#0f172a' : '#64748b'}
-                  textAnchor="middle"
+                  x={padLeft - 6}
+                  y={tick.y + 3.5}
+                  fontSize={10}
+                  fontWeight="500"
+                  fill="#94a3b8"
+                  textAnchor="end"
                 >
-                  {item.label}
+                  {formatShortINR(tick.value)}
                 </SvgText>
               </G>
-            );
-          })}
-        </Svg>
-      </View>
+            ))}
 
-      {/* Bottom 3 Metric Highlights */}
-      <View style={styles.metricsFooter}>
-        <View style={styles.footerItem}>
-          <Text style={styles.footerItemLabel}>Avg / Month</Text>
-          <Text style={styles.footerItemValue}>
-            {formatShortINR(avgMonthly)}
-          </Text>
+            {/* Vertical Bars */}
+            {chartItems.map((item, idx) => {
+              const count = chartItems.length;
+              const slotW = innerW / count;
+              const barW = Math.min(Math.max(slotW * 0.62, 12), 28);
+              const x = padLeft + idx * slotW + (slotW - barW) / 2;
+
+              const barH =
+                maxVal > 0 ? (item.revenue / maxVal) * innerH : 0;
+              const y = padTop + innerH - barH;
+
+              const isPeak = item.label === peakItem.label;
+              const isSelected = activeIdx === idx;
+
+              let barColor = '#334155';
+              if (isSelected) {
+                barColor = '#2563eb';
+              } else if (isPeak) {
+                barColor = '#0f172a';
+              } else if (item.revenue === 0) {
+                barColor = '#f1f5f9';
+              }
+
+              return (
+                <G
+                  key={`bar-${item.label}-${idx}`}
+                  onPress={() => setActiveIdx(activeIdx === idx ? null : idx)}
+                >
+                  <Rect
+                    x={padLeft + idx * slotW}
+                    y={padTop}
+                    width={slotW}
+                    height={innerH}
+                    fill="transparent"
+                  />
+
+                  {barH > 0 && (
+                    <Rect
+                      x={x}
+                      y={y}
+                      width={barW}
+                      height={barH}
+                      rx={3}
+                      fill={barColor}
+                    />
+                  )}
+
+                  {isPeak && barH > 0 && (
+                    <Rect
+                      x={x + barW / 2 - 2}
+                      y={y - 6}
+                      width={4}
+                      height={4}
+                      rx={2}
+                      fill="#10b981"
+                    />
+                  )}
+
+                  <SvgText
+                    x={x + barW / 2}
+                    y={chartHeight - 6}
+                    fontSize={10}
+                    fontWeight={isSelected || isPeak ? '700' : '500'}
+                    fill={isSelected ? '#2563eb' : isPeak ? '#0f172a' : '#64748b'}
+                    textAnchor="middle"
+                  >
+                    {item.label}
+                  </SvgText>
+                </G>
+              );
+            })}
+          </Svg>
         </View>
 
-        <View style={styles.footerItem}>
-          <View style={styles.footerLabelRow}>
-            <Award size={10} color="#f59e0b" strokeWidth={2.4} />
-            <Text style={styles.footerItemLabel}>Peak</Text>
+        {/* Bottom 3 Metric Highlights */}
+        <View style={styles.metricsFooter}>
+          <View style={styles.footerItem}>
+            <Text style={styles.footerItemLabel}>Avg / Month</Text>
+            <Text style={styles.footerItemValue}>
+              {formatShortINR(avgMonthly)}
+            </Text>
           </View>
-          <Text style={styles.footerItemValue}>
-            {peakItem.label} ({formatShortINR(peakItem.revenue)})
-          </Text>
-        </View>
 
-        <View style={styles.footerItem}>
-          <View style={styles.footerLabelRow}>
-            <TrendingUp size={10} color="#10b981" strokeWidth={2.4} />
-            <Text style={styles.footerItemLabel}>Run Rate</Text>
+          <View style={styles.footerItem}>
+            <View style={styles.footerLabelRow}>
+              <Award size={10} color="#f59e0b" strokeWidth={2.4} />
+              <Text style={styles.footerItemLabel}>Peak</Text>
+            </View>
+            <Text style={styles.footerItemValue}>
+              {peakItem.label} ({formatShortINR(peakItem.revenue)})
+            </Text>
           </View>
-          <Text style={styles.footerItemValue}>
-            ₹{((avgMonthly * 12) / 100000).toFixed(1)} L/yr
-          </Text>
+
+          <View style={styles.footerItem}>
+            <View style={styles.footerLabelRow}>
+              <TrendingUp size={10} color="#10b981" strokeWidth={2.4} />
+              <Text style={styles.footerItemLabel}>Run Rate</Text>
+            </View>
+            <Text style={styles.footerItemValue}>
+              ₹{((avgMonthly * 12) / 100000).toFixed(1)} L/yr
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -428,17 +428,21 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: THEME.colors.card,
-    borderRadius: 0,
+    borderRadius: THEME.radius.lg,
     borderWidth: 1,
     borderColor: THEME.colors.border,
-    padding: 14,
+    overflow: 'hidden',
     ...THEME.shadow.card,
   },
   header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.colors.borderSubtle,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
     gap: 8,
   },
   titleRow: {
@@ -449,6 +453,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: THEME.fontFamily.semibold,
     color: THEME.colors.textPrimary,
   },
   growthBadge: {
@@ -468,6 +473,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     color: THEME.colors.textSecondary,
+    fontFamily: THEME.fontFamily.regular,
     marginTop: 2,
   },
   controlsRow: {
@@ -503,6 +509,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: THEME.colors.textPrimary,
   },
+  body: {
+    padding: 16,
+  },
   heroRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -510,7 +519,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   revenueAmount: {
-    fontSize: 23,
+    fontSize: 22,
     fontWeight: '800',
     color: THEME.colors.textPrimary,
     letterSpacing: -0.4,
@@ -536,7 +545,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   activeInspectVal: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
     color: '#1e40af',
   },

@@ -348,6 +348,7 @@ const styles = StyleSheet.create({
   },
   chartGridDesktop: {
     flexDirection: 'row',
+    alignItems: 'stretch',
   },
   chartCol: { flex: 1 },
   tabPanel: { gap: 16 },
