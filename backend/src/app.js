@@ -43,6 +43,24 @@ app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
 app.get('/api/reports', dashboardController.getReports);
 
+const path = require('path');
+const fs = require('fs');
+
+// Serve static web build if present
+const distPath = path.resolve(__dirname, '../../mobile/dist');
+if (fs.existsSync(distPath)) {
+  console.log(`[Static] Serving web client from ${distPath}`);
+  app.use(express.static(distPath));
+
+  // SPA client-side routing fallback for non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
 // Fallback & error handling
 app.use(notFound);
 app.use(errorHandler);

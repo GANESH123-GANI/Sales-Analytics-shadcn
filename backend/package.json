@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "build": "echo Backend is ready",
     "dev": "nodemon src/server.js",
     "db:setup": "node setupDb.js"
   },

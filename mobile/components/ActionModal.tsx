@@ -201,43 +201,58 @@ export const FormModal: React.FC<FormModalProps> = ({
 export interface DetailRow { label: string; value: string | number; highlight?: boolean; }
 
 interface DetailModalProps {
-  visible: boolean;
+  visible?: boolean;
   title: string;
   subtitle?: string;
-  rows: DetailRow[];
+  rows?: DetailRow[];
+  data?: Record<string, any>;
   onClose: () => void;
   actionLabel?: string;
   onAction?: () => void;
 }
 
 export const DetailModal: React.FC<DetailModalProps> = ({
-  visible, title, subtitle, rows, onClose, actionLabel, onAction,
-}) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View style={styles.overlay}>
-      <View style={styles.formBox}>
-        <View style={styles.formHeader}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.formTitle}>{title}</Text>
-            {subtitle && <Text style={styles.formSubtitle}>{subtitle}</Text>}
-          </View>
-          <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-            <X size={16} color={THEME.colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
+  visible = true,
+  title,
+  subtitle,
+  rows,
+  data,
+  onClose,
+  actionLabel,
+  onAction,
+}) => {
+  const displayRows: DetailRow[] =
+    rows ||
+    (data
+      ? Object.entries(data).map(([label, value]) => ({ label, value: String(value) }))
+      : []);
 
-        <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 360 }}>
-          {rows.map((row, i) => (
-            <View key={i} style={[styles.detailRow, i === rows.length - 1 && styles.detailRowLast]}>
-              <Text style={styles.detailLabel}>{row.label}</Text>
-              <Text style={[styles.detailValue, row.highlight && styles.detailValueHighlight]}>
-                {String(row.value)}
-              </Text>
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={styles.formBox}>
+          <View style={styles.formHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.formTitle}>{title}</Text>
+              {subtitle && <Text style={styles.formSubtitle}>{subtitle}</Text>}
             </View>
-          ))}
-        </ScrollView>
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
+              <X size={16} color={THEME.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.formFooter}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 360 }}>
+            {displayRows.map((row, i) => (
+              <View key={i} style={[styles.detailRow, i === displayRows.length - 1 && styles.detailRowLast]}>
+                <Text style={styles.detailLabel}>{row.label}</Text>
+                <Text style={[styles.detailValue, row.highlight && styles.detailValueHighlight]}>
+                  {String(row.value)}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+
+          <View style={styles.formFooter}>
           <TouchableOpacity style={styles.cancelBtn} onPress={onClose} activeOpacity={0.8}>
             <Text style={styles.cancelBtnText}>Close</Text>
           </TouchableOpacity>
@@ -250,7 +265,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({
       </View>
     </View>
   </Modal>
-);
+  );
+};
 
 // ─── Notification Panel Modal ─────────────────────────────────────────────────
 const DEFAULT_NOTIFICATIONS = [

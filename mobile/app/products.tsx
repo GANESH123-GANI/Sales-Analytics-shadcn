@@ -1,209 +1,268 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet, RefreshControl, Alert, useWindowDimensions } from "react-native";
-import { Truck, Users, AlertTriangle, Grid } from "lucide-react-native";
-import { THEME } from "../constants/theme";
-import { AppShell } from "../components/AppShell";
-import { EnterpriseStatCard } from "../components/EnterpriseStatCard";
-import { SpotlightCard } from "../components/SpotlightCard";
-import { DataTable, IdBadge, Column } from "../components/DataTable";
-import { LoadingView } from "../components/LoadingView";
-import { DetailModal } from "../components/ActionModal";
-import { getProducts } from "../services/api";
-import { Product } from "../types/sales";
-import { useRouter } from "expo-router";
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
+import {
+  Package,
+  Layers,
+  AlertTriangle,
+  TrendingUp,
+  Tag,
+  CheckCircle2,
+  Sparkles,
+} from 'lucide-react-native';
+import { THEME } from '../constants/theme';
+import { AppShell } from '../components/AppShell';
+import { EnterpriseStatCard } from '../components/EnterpriseStatCard';
+import { SegmentedTabs } from '../components/SegmentedTabs';
+import { DataTable, IdBadge, Column } from '../components/DataTable';
+import { LoadingView } from '../components/LoadingView';
+import { DetailModal } from '../components/ActionModal';
+import { getProducts } from '../services/api';
+import { Product } from '../types/sales';
 
 export default function ProductsScreen() {
   const { width } = useWindowDimensions();
-  const router    = useRouter();
-  const isDesktop  = width >= 860;
+  const isDesktop = width >= 860;
 
-  const [products,        setProducts]       = useState<Product[]>([]);
-  const [loading,         setLoading]        = useState(true);
-  const [refreshing,      setRefreshing]     = useState(false);
-  const [error,           setError]          = useState<string | null>(null);
-  const [searchQuery,     setSearchQuery]    = useState("");
-  const [selectedProduct, setSelectedProduct]= useState<Product | null>(null);
-  const [detailItem,      setDetailItem]     = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [detailItem, setDetailItem] = useState<Product | null>(null);
 
-  const fetchData = useCallback(async (silent = false, bypass = false) => {
-    try {
-      if (!silent && products.length === 0) setLoading(true);
-      setError(null);
-      const data = await getProducts({ search: searchQuery }, bypass);
-      setProducts(data);
-      if (data.length > 0 && !selectedProduct) setSelectedProduct(data[0]);
-    } catch (err: any) {
-      setError(err.message || "Unable to load fleet sales data.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [products.length, searchQuery, selectedProduct]);
+  const fetchData = useCallback(
+    async (silent = false, bypass = false) => {
+      try {
+        if (!silent && products.length === 0) setLoading(true);
+        setError(null);
+        const data = await getProducts({ search: searchQuery }, bypass);
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message || 'Unable to load catalog data.');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [products.length, searchQuery]
+  );
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-  const onRefresh = () => { setRefreshing(true); fetchData(true, true); };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const lowStockCount = products.filter((p) => p.stock < 50).length;
-  const activeItem    = selectedProduct || products[0];
-  const totalUnitsSold= products.reduce((sum, item) => sum + item.unitsSold, 0);
-  const totalRevenue  = products.reduce((sum, item) => sum + item.revenue,   0);
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData(true, true);
+  };
 
-  const categoryTotals = products.reduce<Record<string, number>>((acc, item) => {
-    acc[item.category] = (acc[item.category] || 0) + item.revenue;
-    return acc;
-  }, {});
+  const categories = ['All', ...Array.from(new Set(products.map((p) => p.category)))];
 
-  const rankedCategories = Object.entries(categoryTotals)
-    .sort((a, b) => b[1] - a[1])
-    .map(([category]) => category);
+  const filteredProducts = products.filter((p) => {
+    if (selectedCategory === 'All') return true;
+    return p.category === selectedCategory;
+  });
 
-  const bestCategory = rankedCategories[0] || activeItem?.category || "N/A";
-  const secondBestCategory = rankedCategories[1] || bestCategory;
-  const thirdBestCategory = rankedCategories[2] || secondBestCategory;
-  const fourthBestCategory = rankedCategories[3] || thirdBestCategory;
-
-  const bestCategoryProduct = products.find((item) => item.category === bestCategory) || activeItem || products[0];
-  const secondCategoryProduct = products.find((item) => item.category === secondBestCategory && item.id !== bestCategoryProduct.id) || products.find((item) => item.category === secondBestCategory) || activeItem || products[0];
-  const thirdCategoryProduct = products.find((item) => item.category === thirdBestCategory && item.id !== bestCategoryProduct.id && item.id !== secondCategoryProduct.id) || products.find((item) => item.category === thirdBestCategory) || activeItem || products[0];
-  const fourthCategoryProduct = products.find((item) => item.category === fourthBestCategory && item.id !== bestCategoryProduct.id && item.id !== secondCategoryProduct.id && item.id !== thirdCategoryProduct.id) || products.find((item) => item.category === fourthBestCategory) || activeItem || products[0];
+  const totalCatalogRevenue = products.reduce((acc, p) => acc + (p.revenue || 0), 0);
+  const totalUnitsSold = products.reduce((acc, p) => acc + (p.unitsSold || 0), 0);
+  const lowStockProducts = products.filter((p) => (p.stock || 0) < 15);
+  const healthyStockCount = products.length - lowStockProducts.length;
 
   const columns: Column<Product>[] = [
     {
-      key: "id", header: "Product ID", width: 120,
-      render: (item) => <IdBadge label={`PRD-${String(item.id).padStart(3, "0")}`} />,
+      key: 'id',
+      header: 'Product ID',
+      width: 120,
+      render: (item) => <IdBadge label={`PRD-${String(item.id).padStart(3, '0')}`} />,
     },
     {
-      key: "name", header: "Product", flex: 1.5,
+      key: 'name',
+      header: 'Product Name',
+      flex: 1.5,
       render: (item) => (
         <View>
-          <Text style={st.bold} numberOfLines={1}>{item.name}</Text>
-          <Text style={st.sub}>{item.category}</Text>
+          <Text style={st.bold} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <View style={st.subTagRow}>
+            <Text style={st.catTag}>{item.category}</Text>
+            <Text style={st.unitPrice}>₹{item.price.toLocaleString('en-IN')}</Text>
+          </View>
         </View>
       ),
     },
     {
-      key: "category", header: "Category", width: 130,
-      render: (item) => <Text style={st.cellText}>{item.category}</Text>,
+      key: 'stock',
+      header: 'Inventory',
+      width: 130,
+      render: (item) => {
+        const isLow = (item.stock || 0) < 15;
+        return (
+          <View style={st.stockWrap}>
+            <View style={[st.stockDot, isLow ? st.stockDotLow : st.stockDotGood]} />
+            <Text style={[st.stockText, isLow && st.stockTextLow]}>
+              {item.stock} in stock
+            </Text>
+          </View>
+        );
+      },
     },
     {
-      key: "unitsSold", header: "Units sold", width: 130,
-      render: (item) => <Text style={st.cellText}>{item.unitsSold}</Text>,
+      key: 'unitsSold',
+      header: 'Units Sold',
+      width: 100,
+      align: 'center',
+      render: (item) => <Text style={st.bold}>{item.unitsSold || 0}</Text>,
     },
     {
-      key: "revenue", header: "Revenue", width: 140, align: "right",
-      render: (item) => <Text style={st.amount}>₹{item.revenue.toLocaleString("en-IN")}</Text>,
+      key: 'revenue',
+      header: 'Gross Revenue',
+      width: 140,
+      align: 'right',
+      render: (item) => (
+        <Text style={st.amount}>₹{(item.revenue || 0).toLocaleString('en-IN')}</Text>
+      ),
     },
   ];
 
   return (
     <AppShell
       activeTab="Fleet sales"
-      title="Fleet sales"
-      subtitle="Track revenue, product performance and sales activity"
+      title="Product Catalog & Inventory"
+      subtitle="Catalog pricing, velocity, stock allocation, and revenue contribution"
       onSearch={setSearchQuery}
-      searchPlaceholder="Search products, categories and sales..."
+      searchPlaceholder="Search product SKU, model, category..."
     >
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME.colors.primary} />
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        tintColor={THEME.colors.primary}
+      />
+
       <LoadingView isLoading={loading} error={error} onRetry={() => fetchData(false, true)}>
+        {/* ─── Top KPI Row with Sparklines ─── */}
         <View style={st.statsRow}>
-          <EnterpriseStatCard label="Products"   value={products.length}                                 icon={Truck} />
-          <EnterpriseStatCard label="Units sold" value={totalUnitsSold}                                  icon={Users} />
-          <EnterpriseStatCard label="Revenue"    value={`₹${totalRevenue.toLocaleString("en-IN")}`}     icon={AlertTriangle} />
-          <EnterpriseStatCard label="Low stock"  value={lowStockCount}                                   icon={Grid}  variant="alert" />
-        </View>
-
-        <View style={[st.splitGrid, isDesktop ? st.splitRow : null]}>
-          <View style={st.leftCol}>
-            <DataTable
-              columns={columns}
-              data={products}
-              keyExtractor={(item) => String(item.id)}
-              actionButtonLabel="Details"
-              onRowAction={(item) => { setSelectedProduct(item); setDetailItem(item); }}
-            />
-          </View>
-          {activeItem && (
-            <View style={st.rightCol}>
-              <SpotlightCard
-                id={`EX-${String(bestCategoryProduct.id).padStart(3, "0")}`}
-                title={bestCategoryProduct.name}
-                subtitle={`${bestCategoryProduct.category} • CAT 320`}
-                category={bestCategoryProduct.category}
-                unitsSold={bestCategoryProduct.unitsSold}
-                revenue={bestCategoryProduct.revenue}
-                stock={bestCategoryProduct.stock}
-                margin={28}
-                onPressAction={() => router.push('/sales')}
-              />
-
-              <SpotlightCard
-                id={`EX-${String(secondCategoryProduct.id).padStart(3, "0")}`}
-                title={secondCategoryProduct.name}
-                subtitle={`${secondCategoryProduct.category} • CAT 320`}
-                category={secondCategoryProduct.category}
-                unitsSold={secondCategoryProduct.unitsSold}
-                revenue={secondCategoryProduct.revenue}
-                stock={secondCategoryProduct.stock}
-                margin={24}
-                onPressAction={() => router.push('/sales')}
-              />
-
-              <SpotlightCard
-                id={`EX-${String(thirdCategoryProduct.id).padStart(3, "0")}`}
-                title={thirdCategoryProduct.name}
-                subtitle={`${thirdCategoryProduct.category} • CAT 320`}
-                category={thirdCategoryProduct.category}
-                unitsSold={thirdCategoryProduct.unitsSold}
-                revenue={thirdCategoryProduct.revenue}
-                stock={thirdCategoryProduct.stock}
-                margin={18}
-                onPressAction={() => router.push('/sales')}
-              />
-
-              <SpotlightCard
-                id={`EX-${String(fourthCategoryProduct.id).padStart(3, "0")}`}
-                title={fourthCategoryProduct.name}
-                subtitle={`${fourthCategoryProduct.category} • CAT 320`}
-                category={fourthCategoryProduct.category}
-                unitsSold={fourthCategoryProduct.unitsSold}
-                revenue={fourthCategoryProduct.revenue}
-                stock={fourthCategoryProduct.stock}
-                margin={16}
-                onPressAction={() => router.push('/sales')}
-              />
-            </View>
-          )}
-        </View>
-
-        <View style={{ marginTop: 20 }}>
-          <DataTable
-            title="Top products"
-            count={products.slice(0, 4).length}
-            columns={columns}
-            data={products.slice(0, 4)}
-            keyExtractor={(item) => `dep-${item.id}`}
-            actionButtonLabel="View"
-            onRowAction={(item) => setDetailItem(item)}
+          <EnterpriseStatCard
+            label="Catalog Items"
+            value={products.length}
+            icon={Package}
+            trend="+3 new"
+            trendPositive={true}
+            sparklineData={[18, 19, 21, 23]}
+            subtitle="active commercial SKUs"
+          />
+          <EnterpriseStatCard
+            label="Units Delivered"
+            value={totalUnitsSold}
+            icon={TrendingUp}
+            trend="+16.8%"
+            trendPositive={true}
+            sparklineData={[180, 220, 260, 310]}
+            subtitle="volume moved"
+          />
+          <EnterpriseStatCard
+            label="Catalog Sales"
+            value={`₹${(totalCatalogRevenue / 1000).toFixed(0)}k`}
+            icon={Layers}
+            trend="+18.4%"
+            trendPositive={true}
+            sparklineData={[340, 520, 710, 898]}
+            subtitle="generated to date"
+          />
+          <EnterpriseStatCard
+            label="Low Stock Alerts"
+            value={lowStockProducts.length}
+            icon={AlertTriangle}
+            variant={lowStockProducts.length > 0 ? 'warning' : 'default'}
+            trend={lowStockProducts.length > 0 ? 'Action Req' : 'Healthy'}
+            trendPositive={lowStockProducts.length === 0}
+            sparklineData={[5, 4, 3, lowStockProducts.length]}
+            subtitle="SKUs under 15 units"
           />
         </View>
+
+        {/* ─── Inventory Health Banner ─── */}
+        <View style={st.healthCard}>
+          <View style={st.healthHeader}>
+            <View style={st.healthTitleRow}>
+              <CheckCircle2 size={15} color="#0f172a" />
+              <Text style={st.healthTitle}>Fulfillment Capacity & Inventory Health</Text>
+            </View>
+            <Text style={st.healthPct}>
+              {((healthyStockCount / (products.length || 1)) * 100).toFixed(0)}% Healthy Stock
+            </Text>
+          </View>
+
+          <View style={st.healthBarTrack}>
+            <View
+              style={[
+                st.healthBarFillGood,
+                { width: `${(healthyStockCount / (products.length || 1)) * 100}%` },
+              ]}
+            />
+            <View
+              style={[
+                st.healthBarFillLow,
+                { width: `${(lowStockProducts.length / (products.length || 1)) * 100}%` },
+              ]}
+            />
+          </View>
+
+          <View style={st.healthLegend}>
+            <Text style={st.legendText}>
+              🟢 {healthyStockCount} SKUs Optimal
+            </Text>
+            <Text style={st.legendText}>
+              ⚠️ {lowStockProducts.length} SKUs Low Stock
+            </Text>
+            <Text style={st.legendText}>
+              Avg Unit Price: ₹{Math.round(totalCatalogRevenue / (totalUnitsSold || 1)).toLocaleString('en-IN')}
+            </Text>
+          </View>
+        </View>
+
+        {/* ─── Category Tabs ─── */}
+        {categories.length > 1 && (
+          <SegmentedTabs
+            tabs={categories}
+            activeTab={selectedCategory}
+            onTabChange={setSelectedCategory}
+            scrollable
+          />
+        )}
+
+        <DataTable
+          title="Product ledger"
+          count={filteredProducts.length}
+          columns={columns}
+          data={filteredProducts}
+          keyExtractor={(item) => String(item.id)}
+          actionButtonLabel="Inspect"
+          onRowAction={(item) => setDetailItem(item)}
+        />
       </LoadingView>
 
+      {/* Detail Modal */}
       {detailItem && (
         <DetailModal
-          visible={!!detailItem}
           title={detailItem.name}
-          subtitle={`EX-${String(detailItem.id).padStart(3, "0")} • ${detailItem.category}`}
-          rows={[
-            { label: "Product ID",        value: `PRD-${String(detailItem.id).padStart(3, "0")}` },
-            { label: "Product Name",      value: detailItem.name },
-            { label: "Category",          value: detailItem.category },
-            { label: "Stock on Hand",     value: `${detailItem.stock} units`, highlight: detailItem.stock < 50 },
-            { label: "Units Sold",        value: detailItem.unitsSold },
-            { label: "Revenue Generated", value: `₹${detailItem.revenue.toLocaleString("en-IN")}`, highlight: true },
-          ]}
+          subtitle={`SKU PRD-${String(detailItem.id).padStart(3, '0')}`}
+          data={{
+            Category: detailItem.category,
+            Price: `₹${detailItem.price.toLocaleString('en-IN')}`,
+            'Units Sold': detailItem.unitsSold,
+            'Revenue Generated': `₹${detailItem.revenue.toLocaleString('en-IN')}`,
+            'Current Stock': `${detailItem.stock} units`,
+          }}
           onClose={() => setDetailItem(null)}
-          actionLabel="View sales"
-          onAction={() => { setDetailItem(null); Alert.alert("Sales View", `Sales details for "${detailItem.name}" are open.`); }}
         />
       )}
     </AppShell>
@@ -212,38 +271,116 @@ export default function ProductsScreen() {
 
 const st = StyleSheet.create({
   statsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  splitGrid: { gap: 16 },
-  splitRow:  { flexDirection: "row", alignItems: "flex-start" },
-  leftCol:   { flex: 1.5 },
-  rightCol:  { flex: 1, gap: 25 },
-  miniCards: { flexDirection: "row", gap: 10 },
+  healthCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: THEME.radius.lg,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    marginBottom: 16,
+    elevation: 1,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+    gap: 10,
+  },
+  healthHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  healthTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  healthTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#09090b',
+  },
+  healthPct: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#047857',
+  },
+  healthBarTrack: {
+    height: 8,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 4,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  healthBarFillGood: {
+    backgroundColor: '#0f172a',
+    height: '100%',
+  },
+  healthBarFillLow: {
+    backgroundColor: '#f59e0b',
+    height: '100%',
+  },
+  healthLegend: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  legendText: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
+  },
   bold: {
-    fontSize: THEME.fontSize.base,
-    fontWeight: "600",
-    fontFamily: THEME.fontFamily.semibold,
-    color: THEME.colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#09090b',
   },
-  sub: {
-    fontSize: THEME.fontSize.xs,
-    fontFamily: THEME.fontFamily.regular,
-    color: THEME.colors.textSecondary,
+  subTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 2,
   },
-  cellText: {
-    fontSize: THEME.fontSize.base,
-    fontWeight: "500",
-    fontFamily: THEME.fontFamily.medium,
-    color: THEME.colors.textPrimary,
+  catTag: {
+    fontSize: 10,
+    color: '#64748b',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  unitPrice: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  stockWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  stockDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  stockDotGood: { backgroundColor: '#10b981' },
+  stockDotLow: { backgroundColor: '#f59e0b' },
+  stockText: {
+    fontSize: 12,
+    color: '#334155',
+  },
+  stockTextLow: {
+    color: '#b45309',
+    fontWeight: '600',
   },
   amount: {
-    fontSize: THEME.fontSize.base,
-    fontWeight: "700",
-    fontFamily: THEME.fontFamily.bold,
-    color: THEME.colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#09090b',
   },
 });

@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npm run start:web",
+    "start": "node backend/src/server.js",
+    "web": "cd mobile && npx expo start --web",
+    "build": "cd mobile && npx expo export -p web",
+    "serve": "node backend/src/server.js",
+    "backend": "cd backend && npm start",
+    "mobile": "cd mobile && npx expo start",
     "start:backend": "cd backend && npm start",
     "start:web": "cd mobile && npx expo start --web",
     "start:mobile": "cd mobile && npx expo start",

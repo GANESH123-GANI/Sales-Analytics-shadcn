@@ -1,4 +1,9 @@
+const path = require('path');
 const dotenv = require('dotenv');
+
+// Load environment variables reliably from backend/.env or root .env
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 const app = require('./app');

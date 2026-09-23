@@ -73,6 +73,53 @@ export interface ReportSummaryRow {
   totalRevenue: number;
 }
 
+export interface FinancialMetrics {
+  grossRevenue: number;
+  cogs: number;
+  grossProfit: number;
+  grossMarginPercent: string;
+  operatingExpenses: number;
+  netOperatingIncome: number;
+  netMarginPercent: string;
+  collectionsRate: string;
+}
+
+export interface OperatingExpense {
+  id: number;
+  category: string;
+  department: string;
+  amount: number;
+  budgetedAmount: number;
+  variance: number;
+  quarter: string;
+}
+
+export interface ExecutiveReview {
+  quarter: string;
+  revenueTarget: number;
+  actualRevenue: number;
+  cogs: number;
+  operatingExpenses: number;
+  netProfit: number;
+  growthRate: string;
+  strategicHighlights: string;
+  operationalRisks: string;
+  auditorSignoff: string;
+  auditDate: string;
+}
+
+export interface EnterpriseContract {
+  id: number;
+  contractCode: string;
+  clientName: string;
+  tier: string;
+  dealValue: number;
+  terms: string;
+  paymentStatus: 'Settled' | 'In Escrow' | 'Invoice Sent' | 'Review Pending';
+  settlementDate: string;
+  region: string;
+}
+
 export interface Report {
   totalRevenue: number;
   totalOrders: number;
@@ -81,6 +128,10 @@ export interface Report {
   topProduct: string;
   topProductRevenue: number;
   summaryTable: ReportSummaryRow[];
+  financialMetrics?: FinancialMetrics;
+  operatingExpenses?: OperatingExpense[];
+  executiveReviews?: ExecutiveReview[];
+  enterpriseContracts?: EnterpriseContract[];
 }
 
 export interface ApiResponse<T> {

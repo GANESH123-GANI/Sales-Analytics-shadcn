@@ -141,16 +141,38 @@ mysql -u root -p < database/seed.sql
 
 ---
 
-## ⚡ Starting the Backend Server
+## 🚀 Running & Hosting Options
 
+### Option 1: One-Command Fullstack Production Hosting (API + Web Dashboard)
+You can host the entire web dashboard and Express API together on a single port:
 ```bash
-cd backend
-npm install
-npm run dev
+# 1. Build the production web bundle
+npm run build
+
+# 2. Start the unified production server
+npm start
 ```
-The server will start at:
-- Local: `http://localhost:5000`
-- Network: `http://0.0.0.0:5000`
+The server will host:
+- 🌐 Web Dashboard: `http://localhost:5000` (or your cloud domain)
+- 🔌 REST API: `http://localhost:5000/api/...`
+
+### Option 2: Run Web Dashboard in Dev Mode
+```bash
+npm run web
+```
+This runs the Expo Metro dev server for the web interface.
+
+### Option 3: Starting Backend Separately in Dev Mode
+```bash
+npm run backend
+# or: cd backend && npm run dev
+```
+
+### Option 4: Docker Containerized Hosting
+```bash
+docker build -t sales-analytics .
+docker run -p 5000:5000 -e DB_HOST=host.docker.internal -e DB_USER=root -e DB_PASSWORD=your_password -e DB_NAME=sales_analytics sales-analytics
+```
 
 ---
 

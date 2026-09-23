@@ -38,10 +38,17 @@ function resolveApiBaseUrl(): string {
     return process.env.EXPO_PUBLIC_API_URL;
   }
 
-  // 1. Web browser: always uses current window hostname or localhost
+  // 1. Web browser: handles dev server (port 8081/19006) vs production hosted environment
   if (Platform.OS === 'web') {
-    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-      return `http://${window.location.hostname}:5000/api`;
+    if (typeof window !== 'undefined' && window.location) {
+      const port = window.location.port;
+      // When developing via Expo Web dev server, backend is separately on :5000
+      if (port === '8081' || port === '19006') {
+        const host = window.location.hostname || 'localhost';
+        return `http://${host}:5000/api`;
+      }
+      // When hosted on production (Render, Railway, Heroku, VPS, or served by Express)
+      return `${window.location.origin}/api`;
     }
     return ENV_PRESETS.LOCALHOST_WEB;
   }
