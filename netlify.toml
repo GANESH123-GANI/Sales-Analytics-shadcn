@@ -1,7 +1,6 @@
 [build]
-  base = "mobile"
-  command = "npx expo export -p web"
-  publish = "dist"
+  command = "npm run build"
+  publish = "mobile/dist"
 
 [[redirects]]
   from = "/*"
