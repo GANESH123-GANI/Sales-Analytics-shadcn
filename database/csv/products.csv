@@ -1,0 +1,26 @@
+id,name,category,price,stock,units_sold,revenue
+1,ProBook Ultra Laptop 16GB,Electronics,64999,45,38,2469962
+2,Apex 5G Smartphone 128GB,Electronics,24999,80,52,1299948
+3,Aura Noise-Cancelling Headphones,Electronics,7499,110,61,457439
+4,Pulse Fitness Smartwatch Pro,Electronics,4999,95,44,219956
+5,UltraView 27-inch 4K Monitor,Electronics,19999,32,29,579971
+6,SilentKey RGB Mechanical Keyboard,Electronics,3499,120,35,122465
+7,Classic Linen Formal Shirt,Clothing,1899,140,78,148122
+8,Raw Selvedge Denim Jeans,Clothing,2499,100,56,139944
+9,Embroidered Cotton Kurta,Clothing,1599,85,41,65559
+10,WeatherShield Bomber Jacket,Clothing,3999,60,33,131967
+11,Tailored Slim Chinos,Clothing,1799,115,47,84553
+12,Pima Cotton Pique Polo,Clothing,1299,150,62,80538
+13,Stride Pro Running Shoes,Footwear,3499,75,43,150457
+14,Heritage Leather Oxford Shoes,Footwear,4599,50,28,128772
+15,Urban Retro Canvas Sneakers,Footwear,2199,90,51,112149
+16,Classic Comfort Leather Loafers,Footwear,2999,65,37,110963
+17,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,5999,40,31,185969
+18,Barista Deluxe Espresso Maker,Home & Kitchen,12499,28,24,299976
+19,TurboSmart Induction Cooktop,Home & Kitchen,2899,70,39,113061
+20,Tri-Ply Stainless Steel Cookware Set,Home & Kitchen,4299,55,26,111774
+21,Modern Tech Architecture Handbook,Books,999,200,88,87912
+22,Scale & Execute: Business Playbook,Books,799,180,74,59126
+23,Executive Leather Daily Planner,Books,649,160,65,42185
+24,Luma Beam Desk Lamp,Home & Kitchen,2499,92,17,42483
+25,Northwind Travel Backpack,Footwear,3299,68,14,46186

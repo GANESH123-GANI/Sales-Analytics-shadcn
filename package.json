@@ -1,0 +1,19 @@
+{
+  "name": "sales-analytics-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run start:web",
+    "start:backend": "cd backend && npm start",
+    "start:web": "cd mobile && npx expo start --web",
+    "start:mobile": "cd mobile && npx expo start",
+    "db:setup": "cd backend && npm run db:setup"
+  },
+  "dependencies": {
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.4",
+    "typescript": "~6.0.3"
+  }
+}

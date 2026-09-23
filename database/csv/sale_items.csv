@@ -1,0 +1,49 @@
+sale_id,product_id,product_name,category,quantity,unit_price,total_price
+1,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+2,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+2,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+3,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999
+4,17,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999
+5,18,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499
+6,10,WeatherShield Bomber Jacket,Clothing,1,3999,3999
+7,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+8,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+9,4,Pulse Fitness Smartwatch Pro,Electronics,1,4999,4999
+10,7,Classic Linen Formal Shirt,Clothing,10,1899,18990
+11,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+12,14,Heritage Leather Oxford Shoes,Footwear,1,4599,4599
+12,10,WeatherShield Bomber Jacket,Clothing,1,3999,3999
+13,14,Heritage Leather Oxford Shoes,Footwear,1,4599,4599
+14,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+15,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+16,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999
+17,18,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499
+18,6,SilentKey RGB Mechanical Keyboard,Electronics,1,3499,3499
+19,17,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999
+20,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+21,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+22,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+23,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999
+24,6,SilentKey RGB Mechanical Keyboard,Electronics,1,3499,3499
+25,18,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499
+26,4,Pulse Fitness Smartwatch Pro,Electronics,1,4999,4999
+27,17,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999
+28,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+29,7,Classic Linen Formal Shirt,Clothing,10,1899,18990
+30,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+31,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999
+32,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+33,18,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499
+34,14,Heritage Leather Oxford Shoes,Footwear,1,4599,4599
+35,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+36,13,Stride Pro Running Shoes,Footwear,1,3499,3499
+37,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+38,17,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999
+39,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+40,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999
+41,18,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499
+42,10,WeatherShield Bomber Jacket,Clothing,1,3998,3998
+43,1,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999
+44,2,Apex 5G Smartphone 128GB,Electronics,1,24999,24999
+45,3,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499
+46,5,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999

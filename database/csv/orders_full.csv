@@ -1,0 +1,49 @@
+order_id,order_date,month,customer_name,customer_email,region,product_name,category,quantity,unit_price,line_total,order_status
+ORD-001,2026-01-08,January,Aditya Rao,aditya.rao@techcorp.in,Hyderabad,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-002,2026-01-14,January,Sneha Patel,sneha.patel@creatives.co,Bangalore,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-002,2026-01-14,January,Sneha Patel,sneha.patel@creatives.co,Bangalore,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-003,2026-01-21,January,Vikram Malhotra,vikram.m@zenithfin.com,Mumbai,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
+ORD-004,2026-01-27,January,Ananya Gupta,ananya.gupta@delhitech.org,Delhi,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999,Completed
+ORD-005,2026-02-03,February,Karthik Raja,karthik.raja@chennaisoft.in,Chennai,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499,Completed
+ORD-006,2026-02-09,February,Pooja Deshmukh,pooja.d@puneventures.io,Pune,WeatherShield Bomber Jacket,Clothing,1,3999,3999,Completed
+ORD-007,2026-02-15,February,Rohan Mehta,rohan.mehta@nexusretail.com,Mumbai,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-008,2026-02-22,February,Divya Nair,divya.nair@keralalogix.in,Bangalore,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-009,2026-02-26,February,Suresh Reddy,suresh.reddy@deccansolutions.com,Hyderabad,Pulse Fitness Smartwatch Pro,Electronics,1,4999,4999,Pending
+ORD-010,2026-03-04,March,Meera Joshi,meera.joshi@capitaltech.net,Pune,Classic Linen Formal Shirt,Clothing,10,1899,18990,Completed
+ORD-011,2026-03-11,March,Arjun Singhania,arjun.s@northstar.co.in,Delhi,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-012,2026-03-18,March,Lavanya Sundaram,lavanya.s@southgrid.in,Chennai,Heritage Leather Oxford Shoes,Footwear,1,4599,4599,Completed
+ORD-012,2026-03-18,March,Lavanya Sundaram,lavanya.s@southgrid.in,Chennai,WeatherShield Bomber Jacket,Clothing,1,3999,3999,Completed
+ORD-013,2026-03-24,March,Nikhil Kulkarni,nikhil.k@apexcloud.com,Pune,Heritage Leather Oxford Shoes,Footwear,1,4599,4599,Cancelled
+ORD-014,2026-03-29,March,Tanvi Bansal,tanvi.bansal@innovate.co,Delhi,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-015,2026-04-05,April,Aditya Rao,aditya.rao@techcorp.in,Hyderabad,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-016,2026-04-12,April,Sneha Patel,sneha.patel@creatives.co,Bangalore,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
+ORD-017,2026-04-17,April,Vikram Malhotra,vikram.m@zenithfin.com,Mumbai,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499,Completed
+ORD-018,2026-04-23,April,Ananya Gupta,ananya.gupta@delhitech.org,Delhi,SilentKey RGB Mechanical Keyboard,Electronics,1,3499,3499,Completed
+ORD-019,2026-04-28,April,Karthik Raja,karthik.raja@chennaisoft.in,Chennai,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999,Pending
+ORD-020,2026-05-04,May,Pooja Deshmukh,pooja.d@puneventures.io,Pune,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-021,2026-05-10,May,Rohan Mehta,rohan.mehta@nexusretail.com,Mumbai,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-022,2026-05-16,May,Divya Nair,divya.nair@keralalogix.in,Bangalore,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-023,2026-05-22,May,Suresh Reddy,suresh.reddy@deccansolutions.com,Hyderabad,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
+ORD-024,2026-05-28,May,Meera Joshi,meera.joshi@capitaltech.net,Pune,SilentKey RGB Mechanical Keyboard,Electronics,1,3499,3499,Completed
+ORD-025,2026-06-03,June,Arjun Singhania,arjun.s@northstar.co.in,Delhi,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499,Completed
+ORD-026,2026-06-11,June,Lavanya Sundaram,lavanya.s@southgrid.in,Chennai,Pulse Fitness Smartwatch Pro,Electronics,1,4999,4999,Cancelled
+ORD-027,2026-06-17,June,Nikhil Kulkarni,nikhil.k@apexcloud.com,Pune,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999,Completed
+ORD-028,2026-06-24,June,Tanvi Bansal,tanvi.bansal@innovate.co,Delhi,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-029,2026-06-29,June,Manish Chawla,manish.c@metrofashion.in,Mumbai,Classic Linen Formal Shirt,Clothing,10,1899,18990,Completed
+ORD-030,2026-07-06,July,Harish Balan,harish.balan@techhive.io,Bangalore,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-031,2026-07-13,July,Aditya Rao,aditya.rao@techcorp.in,Hyderabad,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
+ORD-032,2026-07-19,July,Sneha Patel,sneha.patel@creatives.co,Bangalore,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-033,2026-07-25,July,Vikram Malhotra,vikram.m@zenithfin.com,Mumbai,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499,Pending
+ORD-034,2026-07-31,July,Ananya Gupta,ananya.gupta@delhitech.org,Delhi,Heritage Leather Oxford Shoes,Footwear,1,4599,4599,Completed
+ORD-035,2026-08-05,August,Karthik Raja,karthik.raja@chennaisoft.in,Chennai,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-036,2026-08-12,August,Pooja Deshmukh,pooja.d@puneventures.io,Pune,SilentKey RGB Mechanical Keyboard,Electronics,1,3499,3499,Completed
+ORD-037,2026-08-18,August,Rohan Mehta,rohan.mehta@nexusretail.com,Mumbai,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-038,2026-08-24,August,Divya Nair,divya.nair@keralalogix.in,Bangalore,AeroCrisp Digital Air Fryer 5L,Home & Kitchen,1,5999,5999,Completed
+ORD-039,2026-08-29,August,Suresh Reddy,suresh.reddy@deccansolutions.com,Hyderabad,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-040,2026-09-02,September,Meera Joshi,meera.joshi@capitaltech.net,Pune,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
+ORD-041,2026-09-07,September,Arjun Singhania,arjun.s@northstar.co.in,Delhi,Barista Deluxe Espresso Maker,Home & Kitchen,1,12499,12499,Completed
+ORD-042,2026-09-12,September,Lavanya Sundaram,lavanya.s@southgrid.in,Chennai,WeatherShield Bomber Jacket,Clothing,1,3998,3998,Pending
+ORD-043,2026-09-15,September,Nikhil Kulkarni,nikhil.k@apexcloud.com,Pune,ProBook Ultra Laptop 16GB,Electronics,1,64999,64999,Completed
+ORD-044,2026-09-18,September,Tanvi Bansal,tanvi.bansal@innovate.co,Delhi,Apex 5G Smartphone 128GB,Electronics,1,24999,24999,Completed
+ORD-045,2026-09-20,September,Manish Chawla,manish.c@metrofashion.in,Mumbai,Aura Noise-Cancelling Headphones,Electronics,1,7499,7499,Completed
+ORD-046,2026-09-21,September,Harish Balan,harish.balan@techhive.io,Bangalore,UltraView 27-inch 4K Monitor,Electronics,1,19999,19999,Completed
