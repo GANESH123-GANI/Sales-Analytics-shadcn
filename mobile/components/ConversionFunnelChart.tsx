@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#ffffff',
+    flexWrap: 'wrap',
     gap: 8,
   },
   headerLeft: { flex: 1 },

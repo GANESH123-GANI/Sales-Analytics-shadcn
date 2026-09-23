@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { THEME } from '../constants/theme';
-import { MoreHorizontal } from 'lucide-react-native';
+import { MoreHorizontal, MoveHorizontal } from 'lucide-react-native';
 
 export interface Column<T> {
   key: string;
@@ -158,14 +158,27 @@ export function DataTable<T>({
     </View>
   );
 
+  // Calculate a healthy minimum width so columns are never squashed on mobile screens
+  const calculatedColsWidth = columns.reduce((acc, col) => acc + (col.width || (col.flex ? col.flex * 130 : 130)), 0) +
+    ((actionButtonLabel || showActionMenu) ? resolvedLayout.actionColumnWidth : 0);
+  const effectiveMinWidth = Math.max(resolvedLayout.minTableWidth || 0, calculatedColsWidth, 640);
+
   return (
     <View style={styles.card}>
       {title && (
         <View style={styles.headerBar}>
-          <Text style={styles.title}>{title}</Text>
-          {count !== undefined && (
-            <View style={styles.countBadge}>
-              <Text style={styles.countText}>{count}</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>{title}</Text>
+            {count !== undefined && (
+              <View style={styles.countBadge}>
+                <Text style={styles.countText}>{count}</Text>
+              </View>
+            )}
+          </View>
+          {!isDesktop && (
+            <View style={styles.scrollHintBadge}>
+              <MoveHorizontal size={12} color={THEME.colors.textMuted} />
+              <Text style={styles.scrollHintText}>Swipe to view all</Text>
             </View>
           )}
         </View>
@@ -173,12 +186,12 @@ export function DataTable<T>({
 
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         showsVerticalScrollIndicator={false}
-        alwaysBounceHorizontal={false}
-        contentContainerStyle={{ width: '100%', minWidth: resolvedLayout.minTableWidth || '100%' }}
+        alwaysBounceHorizontal={true}
+        contentContainerStyle={{ minWidth: effectiveMinWidth }}
       >
-        <View style={[styles.table, { width: '100%', minWidth: resolvedLayout.minTableWidth || '100%' }]}>
+        <View style={[styles.table, { minWidth: effectiveMinWidth }]}>
           <View style={tableHeaderStyle}>
             {columns.map((col) => renderHeaderCell(col))}
             {(actionButtonLabel || showActionMenu) && renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true)}
@@ -198,7 +211,6 @@ export function DataTable<T>({
                   {
                     paddingHorizontal: resolvedLayout.rowPaddingHorizontal,
                     paddingVertical: resolvedLayout.rowPaddingVertical,
-                    marginBottom: 10,
                   },
                 ]}
               >
@@ -263,7 +275,31 @@ const styles = StyleSheet.create({
     borderBottomColor: THEME.colors.borderSubtle,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  scrollHintBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: THEME.colors.muted,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: THEME.radius.sm,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+  },
+  scrollHintText: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: THEME.fontFamily.medium,
+    color: THEME.colors.textMuted,
   },
   title: {
     fontSize: 15,

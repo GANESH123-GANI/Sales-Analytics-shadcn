@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { THEME } from '../constants/theme';
 import { LucideIcon, ArrowUpRight, ArrowDownRight } from 'lucide-react-native';
@@ -25,6 +25,8 @@ export const EnterpriseStatCard: React.FC<EnterpriseStatCardProps> = ({
   sparklineData,
   subtitle,
 }) => {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const isAlert = variant === 'alert';
   const isSuccess = variant === 'success';
 
@@ -62,7 +64,7 @@ export const EnterpriseStatCard: React.FC<EnterpriseStatCardProps> = ({
   };
 
   return (
-    <View style={[styles.card, isAlert && styles.cardAlert, isSuccess && styles.cardSuccess]}>
+    <View style={[styles.card, isMobile && styles.cardMobile, isAlert && styles.cardAlert, isSuccess && styles.cardSuccess]}>
       <View style={styles.headerRow}>
         <Text style={styles.label} numberOfLines={1}>
           {label}
@@ -126,6 +128,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     elevation: 1,
     boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
+  },
+  cardMobile: {
+    flexBasis: '46%',
+    minWidth: 140,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   cardAlert: {
     borderColor: '#fecaca',

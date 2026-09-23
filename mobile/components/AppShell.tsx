@@ -209,11 +209,13 @@ export const AppShell: React.FC<AppShellProps> = ({
 
             {/* Top Bar Right */}
             <View style={styles.topBarRight}>
-              {/* Live Status Badge */}
-              <View style={styles.liveCloudBadge}>
-                <View style={styles.livePulseDot} />
-                <Text style={styles.liveCloudText}>Connected</Text>
-              </View>
+              {/* Live Status Badge (Hidden on very small screens to prevent crowding) */}
+              {!isCompact && (
+                <View style={styles.liveCloudBadge}>
+                  <View style={styles.livePulseDot} />
+                  <Text style={styles.liveCloudText}>Connected</Text>
+                </View>
+              )}
 
               <TouchableOpacity
                 style={styles.iconButton}
@@ -242,13 +244,16 @@ export const AppShell: React.FC<AppShellProps> = ({
           {/* Page Content */}
           <ScrollView
             style={styles.contentScrollView}
-            contentContainerStyle={styles.contentContainer}
+            contentContainerStyle={[
+              styles.contentContainer,
+              { paddingHorizontal: isDesktop ? 20 : 12, paddingTop: isDesktop ? 20 : 12 },
+            ]}
             showsVerticalScrollIndicator={false}
           >
             {title && (
               <View style={styles.pageHeader}>
                 <View style={styles.pageHeaderLeft}>
-                  <Text style={styles.pageTitle}>{title}</Text>
+                  <Text style={[styles.pageTitle, !isDesktop && styles.pageTitleMobile]}>{title}</Text>
                   {subtitle && <Text style={styles.pageSubtitle}>{subtitle}</Text>}
                 </View>
                 {headerRight && <View style={styles.pageHeaderRight}>{headerRight}</View>}
@@ -670,6 +675,11 @@ const styles = StyleSheet.create({
     color: THEME.colors.textPrimary,
     letterSpacing: -0.8,
     lineHeight: 36,
+  },
+  pageTitleMobile: {
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.4,
   },
   pageSubtitle: {
     fontSize: THEME.fontSize.md,

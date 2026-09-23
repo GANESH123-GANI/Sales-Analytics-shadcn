@@ -920,10 +920,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
     backgroundColor: '#ffffff',
+    flexWrap: 'wrap',
   },
   statCard: {
     flex: 1,
-    paddingHorizontal: 12,
+    minWidth: 100,
+    paddingHorizontal: 10,
     paddingVertical: 9,
     borderRightWidth: 1,
     borderRightColor: '#f1f5f9',
