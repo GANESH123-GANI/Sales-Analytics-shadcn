@@ -57,9 +57,18 @@ exports.getMonthlyRevenue = async (req, res, next) => {
       ORDER BY 2 ASC
     `);
 
-    const result = rows.map(r => ({
-      month: r.month,
-      revenue: Number(r.revenue)
+    // Standard 9-month fiscal progression
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+    const revenueMap = {};
+
+    rows.forEach(r => {
+      const cleanMonth = (r.month || '').trim().substring(0, 3);
+      revenueMap[cleanMonth] = Number(r.revenue) || 0;
+    });
+
+    const result = MONTHS.map(m => ({
+      month: m,
+      revenue: revenueMap[m] || 0
     }));
 
     res.status(200).json({

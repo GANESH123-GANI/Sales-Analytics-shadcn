@@ -218,7 +218,14 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => {
         <View style={styles.pillGroup}>
           {(['all', '6m', '3m'] as TimeRange[]).map((r) => {
             const isActive = timeRange === r;
-            const label = r === 'all' ? 'All (9M)' : r === '6m' ? '6 Months' : '3 Months';
+            const label =
+              r === 'all'
+                ? data.length > 0
+                  ? `All (${data.length}M)`
+                  : 'All'
+                : r === '6m'
+                ? '6 Months'
+                : '3 Months';
             return (
               <TouchableOpacity
                 key={r}
