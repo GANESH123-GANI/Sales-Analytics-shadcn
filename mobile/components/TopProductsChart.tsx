@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import {
   Package,
   ArrowUpRight,
@@ -181,8 +181,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     overflow: 'hidden',
-    elevation: 1,
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+    ...THEME.shadow.card,
   },
   header: {
     paddingHorizontal: 16,
@@ -236,7 +235,7 @@ const styles = StyleSheet.create({
   toggleBtnActive: {
     backgroundColor: '#ffffff',
     elevation: 1,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } : {}),
   },
   toggleText: {
     fontSize: 11,

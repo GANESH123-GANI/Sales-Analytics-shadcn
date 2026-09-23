@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform, useWindowDimensions } from 'react-native';
 import { THEME } from '../constants/theme';
 
 interface SegmentedTabsProps {
@@ -15,6 +15,9 @@ export const SegmentedTabs: React.FC<SegmentedTabsProps> = ({
   onTabChange,
   scrollable = false,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const shouldScroll = scrollable || screenWidth < 520 || tabs.length > 3;
+
   const content = (
     <>
       {tabs.map((tab) => {
@@ -35,7 +38,7 @@ export const SegmentedTabs: React.FC<SegmentedTabsProps> = ({
     </>
   );
 
-  if (scrollable) {
+  if (shouldScroll) {
     return (
       <ScrollView
         horizontal
@@ -87,8 +90,15 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: THEME.colors.card,
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
     elevation: 2,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)' }
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+        }),
   },
   tabText: {
     fontSize: THEME.fontSize.base,

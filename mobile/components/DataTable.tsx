@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { THEME } from '../constants/theme';
-import { MoreHorizontal, MoveHorizontal } from 'lucide-react-native';
+import { MoreHorizontal, MoveHorizontal, LayoutGrid, Table as TableIcon } from 'lucide-react-native';
 
 export interface Column<T> {
   key: string;
@@ -158,6 +158,8 @@ export function DataTable<T>({
     </View>
   );
 
+  const [viewMode, setViewMode] = React.useState<'cards' | 'table'>(isDesktop ? 'table' : 'cards');
+
   // Calculate a healthy minimum width so columns are never squashed on mobile screens
   const calculatedColsWidth = columns.reduce((acc, col) => acc + (col.width || (col.flex ? col.flex * 130 : 130)), 0) +
     ((actionButtonLabel || showActionMenu) ? resolvedLayout.actionColumnWidth : 0);
@@ -175,52 +177,171 @@ export function DataTable<T>({
               </View>
             )}
           </View>
-          {!isDesktop && (
-            <View style={styles.scrollHintBadge}>
-              <MoveHorizontal size={12} color={THEME.colors.textMuted} />
-              <Text style={styles.scrollHintText}>Swipe to view all</Text>
+
+          <View style={styles.headerRightControls}>
+            {/* View Switcher: Cards vs Table */}
+            <View style={styles.viewSwitcher}>
+              <TouchableOpacity
+                style={[styles.viewSwitchBtn, viewMode === 'cards' && styles.viewSwitchBtnActive]}
+                onPress={() => setViewMode('cards')}
+                activeOpacity={0.7}
+              >
+                <LayoutGrid size={12} color={viewMode === 'cards' ? THEME.colors.textPrimary : THEME.colors.textMuted} />
+                <Text style={[styles.viewSwitchText, viewMode === 'cards' && styles.viewSwitchTextActive]}>
+                  Cards
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.viewSwitchBtn, viewMode === 'table' && styles.viewSwitchBtnActive]}
+                onPress={() => setViewMode('table')}
+                activeOpacity={0.7}
+              >
+                <TableIcon size={12} color={viewMode === 'table' ? THEME.colors.textPrimary : THEME.colors.textMuted} />
+                <Text style={[styles.viewSwitchText, viewMode === 'table' && styles.viewSwitchTextActive]}>
+                  Table
+                </Text>
+              </TouchableOpacity>
             </View>
-          )}
+
+            {viewMode === 'table' && !isDesktop && (
+              <View style={styles.scrollHintBadge}>
+                <MoveHorizontal size={11} color={THEME.colors.textMuted} />
+                <Text style={styles.scrollHintText}>Swipe</Text>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={true}
-        showsVerticalScrollIndicator={false}
-        alwaysBounceHorizontal={true}
-        contentContainerStyle={{ minWidth: effectiveMinWidth }}
-      >
-        <View style={[styles.table, { minWidth: effectiveMinWidth }]}>
-          <View style={tableHeaderStyle}>
-            {columns.map((col) => renderHeaderCell(col))}
-            {(actionButtonLabel || showActionMenu) && renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true)}
-          </View>
-
+      {/* ─── Mode 1: Mobile Responsive Cards ─── */}
+      {viewMode === 'cards' ? (
+        <View style={styles.cardsListContainer}>
           {data.length === 0 ? (
             <View style={styles.emptyRow}>
               <Text style={styles.emptyText}>No records found</Text>
             </View>
           ) : (
-            data.map((item, index) => (
-              <View
-                key={keyExtractor(item, index)}
-                style={[
-                  styles.row,
-                  index % 2 === 1 && styles.rowAlt,
-                  {
-                    paddingHorizontal: resolvedLayout.rowPaddingHorizontal,
-                    paddingVertical: resolvedLayout.rowPaddingVertical,
-                  },
-                ]}
-              >
-                {columns.map((col) => renderCell(col, item, index))}
-                {(actionButtonLabel || showActionMenu) && renderCell({ key: 'action', header: 'Action' } as Column<T>, item, index, true)}
-              </View>
-            ))
+            data.map((item, index) => {
+              const statusCol = columns.find((c) => c.key.toLowerCase().includes('status'));
+              const idCol = columns[0];
+              const mainCol = columns[1];
+              const otherCols = columns.filter(
+                (c) => c.key !== idCol?.key && c.key !== mainCol?.key && !c.key.toLowerCase().includes('status')
+              );
+
+              return (
+                <View key={keyExtractor(item, index)} style={styles.mobileCard}>
+                  {/* Card Header: ID Badge & Status */}
+                  <View style={styles.mobileCardHeader}>
+                    <View style={styles.mobileCardIdBox}>
+                      {idCol && (idCol.render ? idCol.render(item, index) : (
+                        <Text style={styles.mobileCardIdText}>{String((item as any)[idCol.key] ?? '')}</Text>
+                      ))}
+                    </View>
+
+                    {statusCol && (
+                      <View>
+                        {statusCol.render ? statusCol.render(item, index) : (
+                          <StatusPill status={String((item as any)[statusCol.key] ?? '')} />
+                        )}
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Card Main Item (Title / Customer Name / Product) */}
+                  {mainCol && (
+                    <View style={styles.mobileCardMain}>
+                      {mainCol.render ? (
+                        mainCol.render(item, index)
+                      ) : (
+                        <Text style={styles.mobileCardMainTitle}>{String((item as any)[mainCol.key] ?? '')}</Text>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Card Meta Grid (Other attributes: Region, Amount, Date, etc.) */}
+                  {otherCols.length > 0 && (
+                    <View style={styles.mobileCardMetaGrid}>
+                      {otherCols.map((col) => (
+                        <View key={col.key} style={styles.mobileCardMetaCol}>
+                          <Text style={styles.mobileCardMetaLabel}>{col.header}</Text>
+                          <View style={styles.mobileCardMetaValBox}>
+                            {col.render ? (
+                              col.render(item, index)
+                            ) : (
+                              <Text style={styles.mobileCardMetaValText}>
+                                {String((item as any)[col.key] ?? '')}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Action Button */}
+                  {actionButtonLabel && (
+                    <TouchableOpacity
+                      style={styles.mobileCardFullActionBtn}
+                      onPress={() => onRowAction && onRowAction(item)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.mobileCardFullActionText}>{actionButtonLabel}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })
           )}
         </View>
-      </ScrollView>
+      ) : (
+        /* ─── Mode 2: Traditional Horizontal Scrolling Table ─── */
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={true}
+          showsVerticalScrollIndicator={false}
+          alwaysBounceHorizontal={true}
+          contentContainerStyle={{ minWidth: effectiveMinWidth }}
+        >
+          <View style={[styles.table, { minWidth: effectiveMinWidth }]}>
+            <View style={tableHeaderStyle}>
+              {columns.map((col) => renderHeaderCell(col))}
+              {(actionButtonLabel || showActionMenu) &&
+                renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true)}
+            </View>
+
+            {data.length === 0 ? (
+              <View style={styles.emptyRow}>
+                <Text style={styles.emptyText}>No records found</Text>
+              </View>
+            ) : (
+              data.map((item, index) => (
+                <View
+                  key={keyExtractor(item, index)}
+                  style={[
+                    styles.row,
+                    index % 2 === 1 && styles.rowAlt,
+                    {
+                      paddingHorizontal: resolvedLayout.rowPaddingHorizontal,
+                      paddingVertical: resolvedLayout.rowPaddingVertical,
+                    },
+                  ]}
+                >
+                  {columns.map((col) => renderCell(col, item, index))}
+                  {(actionButtonLabel || showActionMenu) &&
+                    renderCell(
+                      { key: 'action', header: 'Action' } as Column<T>,
+                      item,
+                      index,
+                      true
+                    )}
+                </View>
+              ))
+            )}
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -283,6 +404,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  headerRightControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  viewSwitcher: {
+    flexDirection: 'row',
+    backgroundColor: THEME.colors.secondary,
+    borderRadius: THEME.radius.sm,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+  },
+  viewSwitchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: THEME.radius.xs,
+  },
+  viewSwitchBtnActive: {
+    backgroundColor: THEME.colors.card,
+    elevation: 1,
+  },
+  viewSwitchText: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: THEME.fontFamily.medium,
+    color: THEME.colors.textMuted,
+  },
+  viewSwitchTextActive: {
+    color: THEME.colors.textPrimary,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
   },
   scrollHintBadge: {
     flexDirection: 'row',
@@ -395,6 +552,88 @@ const styles = StyleSheet.create({
     fontSize: THEME.fontSize.base,
     color: THEME.colors.textMuted,
     fontFamily: THEME.fontFamily.regular,
+  },
+  // Mobile Cards Mode Styles
+  cardsListContainer: {
+    padding: 12,
+    gap: 10,
+    backgroundColor: '#fafbfc',
+  },
+  mobileCard: {
+    backgroundColor: THEME.colors.card,
+    borderRadius: THEME.radius.md,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    padding: 14,
+    gap: 10,
+    elevation: 1,
+  },
+  mobileCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mobileCardIdBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  mobileCardIdText: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: THEME.fontFamily.bold,
+    color: THEME.colors.textPrimary,
+  },
+  mobileCardMain: {
+    marginTop: 2,
+  },
+  mobileCardMainTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+    color: THEME.colors.textPrimary,
+  },
+  mobileCardMetaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: THEME.colors.borderSubtle,
+  },
+  mobileCardMetaCol: {
+    minWidth: '45%',
+    flex: 1,
+  },
+  mobileCardMetaLabel: {
+    fontSize: 10.5,
+    color: THEME.colors.textMuted,
+    fontFamily: THEME.fontFamily.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  mobileCardMetaValBox: {
+    marginTop: 2,
+  },
+  mobileCardMetaValText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+    color: THEME.colors.textPrimary,
+  },
+  mobileCardFullActionBtn: {
+    backgroundColor: THEME.colors.primary,
+    borderRadius: THEME.radius.sm,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  mobileCardFullActionText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
   },
   // Status Pills
   pill: {

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   LayoutChangeEvent,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import Svg, {
   Path,
@@ -39,7 +40,8 @@ type TimeRange = 'all' | '6m' | '3m';
 type ChartMode = 'spline' | 'bars' | 'line';
 
 export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => {
-  const [containerWidth, setContainerWidth] = useState(500);
+  const { width: winWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(Math.max(winWidth - 48, 280));
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [chartMode, setChartMode] = useState<ChartMode>('spline');
   const [showBenchmark, setShowBenchmark] = useState<boolean>(true);
@@ -47,7 +49,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => {
 
   const onLayout = (e: LayoutChangeEvent) => {
     const width = e.nativeEvent.layout.width;
-    if (width > 100) {
+    if (width > 50) {
       setContainerWidth(width);
     }
   };
@@ -765,7 +767,7 @@ const styles = StyleSheet.create({
   pillBtnActive: {
     backgroundColor: '#ffffff',
     elevation: 1,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } : {}),
   },
   pillText: {
     fontSize: 11,
@@ -819,7 +821,7 @@ const styles = StyleSheet.create({
   modeBtnActive: {
     backgroundColor: '#ffffff',
     elevation: 1,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } : {}),
   },
 
   /* Active Point Inspector */

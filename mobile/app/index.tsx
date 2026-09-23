@@ -6,6 +6,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import {
   FileText,
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
   timePillActive: {
     backgroundColor: '#ffffff',
     elevation: 1,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } : {}),
   },
   timePillText: {
     fontSize: 11,

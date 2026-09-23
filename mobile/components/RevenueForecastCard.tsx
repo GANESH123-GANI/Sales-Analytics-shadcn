@@ -130,8 +130,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     overflow: 'hidden',
-    elevation: 1,
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+    ...THEME.shadow.card,
   },
   header: {
     paddingHorizontal: 16,

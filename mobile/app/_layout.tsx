@@ -37,7 +37,6 @@ export default function AppLayout() {
                 paddingBottom: Platform.OS === 'ios' ? 24 : 8,
                 paddingTop: 8,
                 elevation: 8,
-                boxShadow: '0 -2px 6px rgba(0, 0, 0, 0.04)',
               },
           tabBarLabelStyle: {
             fontSize: 11,

@@ -1,3 +1,7 @@
+import { Platform } from 'react-native';
+
+const isWeb = Platform.OS === 'web';
+
 /**
  * Sales Analytics — shadcn/ui-aligned Design Tokens
  *
@@ -158,24 +162,52 @@ export const THEME = {
     full: 9999,
   },
 
-  // ─── Shadows ───────────────────────────────────────────────────────────────
+  // ─── Shadows (Universal Android + iOS + Web) ───────────────────────────
   shadow: {
     none: {},
     card: {
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03)',
       elevation: 1,
+      ...(isWeb
+        ? { boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03)' }
+        : {
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.04,
+            shadowRadius: 2,
+          }),
     },
     md: {
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
       elevation: 3,
+      ...(isWeb
+        ? { boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)' }
+        : {
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 4,
+          }),
     },
     dropdown: {
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
       elevation: 3,
+      ...(isWeb
+        ? { boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)' }
+        : {
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 4,
+          }),
     },
     modal: {
-      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
       elevation: 10,
+      ...(isWeb
+        ? { boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)' }
+        : {
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.16,
+            shadowRadius: 16,
+          }),
     },
   },
 };

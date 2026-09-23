@@ -309,8 +309,7 @@ const st = StyleSheet.create({
     borderColor: '#e2e8f0',
     padding: 14,
     marginBottom: 16,
-    elevation: 1,
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+    ...THEME.shadow.card,
     gap: 10,
   },
   tierHeader: {

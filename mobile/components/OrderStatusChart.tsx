@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import Svg, { Path, Circle, Text as SvgText, G } from 'react-native-svg';
 import { PieChart as PieIcon, CheckCircle2, Clock, XCircle } from 'lucide-react-native';
 import { THEME } from '../constants/theme';
@@ -10,6 +10,8 @@ interface OrderStatusChartProps {
 }
 
 export const OrderStatusChart: React.FC<OrderStatusChartProps> = ({ data }) => {
+  const { width: winWidth } = useWindowDimensions();
+  const isNarrow = winWidth < 380;
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
   const [chartType, setChartType] = useState<'pie' | 'donut'>('pie');
 
@@ -162,7 +164,7 @@ export const OrderStatusChart: React.FC<OrderStatusChartProps> = ({ data }) => {
 
       {/* Uniform Body */}
       <View style={styles.body}>
-        <View style={styles.contentRow}>
+        <View style={[styles.contentRow, isNarrow && styles.contentRowNarrow]}>
           {/* Pie / Donut Chart */}
           <View style={styles.chartWrap}>
             <Svg width={size} height={size}>
@@ -364,6 +366,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 14,
+  },
+  contentRowNarrow: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 16,
   },
   chartWrap: {
     alignItems: 'center',

@@ -92,16 +92,29 @@ export const AppShell: React.FC<AppShellProps> = ({
   // ─── Sidebar ────────────────────────────────────────────────────────────────
   const Sidebar = () => (
     <View style={[styles.sidebar, !isDesktop && styles.mobileSidebarOverlay]}>
-      {/* Workspace / Org Switcher (Classic shadcn/ui Sidebar pattern) */}
-      <View style={styles.workspaceSwitcher}>
-        <View style={styles.workspaceIconBox}>
-          <Building2 size={16} color="#ffffff" />
+      {/* Workspace / Org Switcher & Mobile Close Button */}
+      <View style={styles.sidebarHeaderRow}>
+        <View style={styles.workspaceSwitcher}>
+          <View style={styles.workspaceIconBox}>
+            <Building2 size={16} color="#ffffff" />
+          </View>
+          <View style={styles.workspaceInfo}>
+            <Text style={styles.workspaceName}>Enterprise Corp</Text>
+            <Text style={styles.workspacePlan}>Analytics Pro</Text>
+          </View>
+          <ChevronsUpDown size={14} color={THEME.colors.textMuted} />
         </View>
-        <View style={styles.workspaceInfo}>
-          <Text style={styles.workspaceName}>Enterprise Corp</Text>
-          <Text style={styles.workspacePlan}>Analytics Pro</Text>
-        </View>
-        <ChevronsUpDown size={14} color={THEME.colors.textMuted} />
+
+        {!isDesktop && (
+          <TouchableOpacity
+            style={styles.mobileCloseBtn}
+            onPress={() => setMobileMenuOpen(false)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <X size={18} color={THEME.colors.textPrimary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Nav section label */}
@@ -160,7 +173,14 @@ export const AppShell: React.FC<AppShellProps> = ({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
-        {/* ── Sidebar ── */}
+        {/* ── Sidebar & Mobile Backdrop ── */}
+        {!isDesktop && mobileMenuOpen && (
+          <TouchableOpacity
+            style={styles.drawerBackdrop}
+            activeOpacity={1}
+            onPress={() => setMobileMenuOpen(false)}
+          />
+        )}
         {(isDesktop || mobileMenuOpen) && <Sidebar />}
 
         {/* ── Main content ── */}
@@ -307,9 +327,32 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     zIndex: 999,
-    elevation: 10,
-    width: 264,
-    boxShadow: '4px 0 16px rgba(0, 0, 0, 0.12)',
+    elevation: 12,
+    width: 275,
+    ...(Platform.OS === 'web' ? { boxShadow: '4px 0 24px rgba(0, 0, 0, 0.16)' } : {}),
+  },
+  drawerBackdrop: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    zIndex: 998,
+  },
+  sidebarHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 8,
+  },
+  mobileCloseBtn: {
+    padding: 6,
+    borderRadius: THEME.radius.sm,
+    backgroundColor: THEME.colors.secondary,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
   },
   sidebarHeader: {
     flexDirection: 'row',
