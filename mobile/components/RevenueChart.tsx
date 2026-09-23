@@ -571,14 +571,15 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => {
                   width={colWidth}
                   height={innerHeight + paddingBottom}
                   fill="transparent"
-                  onPress={() => setSelectedIdx(idx)}
-                  // Web mouse hover support
-                  {...(Platform.OS === 'web'
+                  {...((Platform.OS === 'web'
                     ? {
+                        onClick: () => setSelectedIdx(idx),
                         onMouseEnter: () => setSelectedIdx(idx),
                         style: { cursor: 'pointer' },
                       }
-                    : {})}
+                    : {
+                        onPress: () => setSelectedIdx(idx),
+                      }) as any)}
                 />
               );
             })}

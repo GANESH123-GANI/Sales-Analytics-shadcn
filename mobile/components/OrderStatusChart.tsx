@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Svg, { Path, Circle, Text as SvgText, G } from 'react-native-svg';
 import { PieChart as PieIcon, CheckCircle2, Clock, XCircle } from 'lucide-react-native';
 import { THEME } from '../constants/theme';
@@ -186,9 +186,16 @@ export const OrderStatusChart: React.FC<OrderStatusChartProps> = ({ data }) => {
                 return (
                   <G
                     key={idx}
-                    onPress={() =>
-                      setActiveStatus(activeStatus === slice.status ? null : slice.status)
-                    }
+                    {...((Platform.OS === 'web'
+                      ? {
+                          onClick: () =>
+                            setActiveStatus(activeStatus === slice.status ? null : slice.status),
+                          style: { cursor: 'pointer' },
+                        }
+                      : {
+                          onPress: () =>
+                            setActiveStatus(activeStatus === slice.status ? null : slice.status),
+                        }) as any)}
                   >
                     <Path
                       d={slice.pathD}
