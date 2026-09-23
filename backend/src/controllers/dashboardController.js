@@ -54,7 +54,7 @@ exports.getMonthlyRevenue = async (req, res, next) => {
       FROM sales
       WHERE status != 'Cancelled'
       GROUP BY DATE_FORMAT(sale_date, '%b'), MONTH(sale_date)
-      ORDER BY monthNum ASC
+      ORDER BY 2 ASC
     `);
 
     const result = rows.map(r => ({
@@ -371,7 +371,7 @@ exports.getDashboardAll = async (req, res, next) => {
         FROM sales
         WHERE status != 'Cancelled'
         GROUP BY DATE_FORMAT(sale_date, '%b'), MONTH(sale_date)
-        ORDER BY monthNum ASC
+        ORDER BY 2 ASC
       `),
       pool.query(`
         SELECT 
