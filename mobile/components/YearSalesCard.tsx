@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { TrendingUp, Calendar, Target, Award, ArrowUpRight } from 'lucide-react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  LayoutChangeEvent,
+} from 'react-native';
+import Svg, { Rect, Line, Text as SvgText, G } from 'react-native-svg';
+import {
+  BarChart3,
+  ArrowUpRight,
+  Target,
+  Award,
+  TrendingUp,
+} from 'lucide-react-native';
 import { THEME } from '../constants/theme';
 import { MonthlyRevenue } from '../types/sales';
 
@@ -15,209 +28,396 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
   data = [],
   totalRevenue,
   totalOrders = 44,
-  annualTarget = 1200000, // ₹12,00,000 default annual target
+  annualTarget = 1200000,
 }) => {
   const [selectedYear, setSelectedYear] = useState<'2026' | '2025'>('2026');
-  const [activeMonthIdx, setActiveMonthIdx] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'monthly' | 'quarterly'>('monthly');
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState(380);
 
-  // Calculate year totals
+  const onLayout = (e: LayoutChangeEvent) => {
+    const width = e.nativeEvent.layout.width;
+    if (width > 100) {
+      setContainerWidth(width);
+    }
+  };
+
+  // Base dataset
+  const currentData: MonthlyRevenue[] =
+    data.length > 0
+      ? data
+      : [
+          { month: 'Jan', revenue: 123495 },
+          { month: 'Feb', revenue: 53994 },
+          { month: 'Mar', revenue: 117586 },
+          { month: 'Apr', revenue: 49495 },
+          { month: 'May', revenue: 120995 },
+          { month: 'Jun', revenue: 102487 },
+          { month: 'Jul', revenue: 69595 },
+          { month: 'Aug', revenue: 106995 },
+          { month: 'Sep', revenue: 153992 },
+        ];
+
+  // Adjust for year switch
+  const activeYearData = currentData.map((d) => ({
+    month: d.month,
+    revenue:
+      selectedYear === '2026' ? d.revenue : Math.round(d.revenue * 0.84),
+  }));
+
+  // Aggregate for quarterly view if selected
+  const quarterlyData = [
+    {
+      label: 'Q1',
+      revenue: activeYearData.slice(0, 3).reduce((s, c) => s + c.revenue, 0),
+    },
+    {
+      label: 'Q2',
+      revenue: activeYearData.slice(3, 6).reduce((s, c) => s + c.revenue, 0),
+    },
+    {
+      label: 'Q3',
+      revenue: activeYearData.slice(6, 9).reduce((s, c) => s + c.revenue, 0),
+    },
+    {
+      label: 'Q4',
+      revenue: selectedYear === '2026' ? 0 : 210000,
+    },
+  ];
+
+  const chartItems =
+    viewMode === 'monthly'
+      ? activeYearData.map((d) => ({ label: d.month, revenue: d.revenue }))
+      : quarterlyData;
+
   const calculatedTotal =
-    totalRevenue ?? data.reduce((acc, curr) => acc + curr.revenue, 0);
+    totalRevenue ??
+    activeYearData.reduce((acc, curr) => acc + curr.revenue, 0);
 
   const displayTotal =
     selectedYear === '2026'
       ? calculatedTotal
-      : Math.round(calculatedTotal * 0.84); // prior year simulated comparison
+      : Math.round(calculatedTotal * 0.84);
 
-  const displayTarget =
-    selectedYear === '2026' ? annualTarget : 1000000;
-
+  const displayTarget = selectedYear === '2026' ? annualTarget : 1000000;
   const progressPercent = Math.min(
     Math.round((displayTotal / displayTarget) * 100),
     100
   );
 
-  // Month stats
-  const monthsCount = data.length || 1;
-  const avgMonthly = Math.round(displayTotal / monthsCount);
+  const maxVal = Math.max(...chartItems.map((i) => i.revenue), 1000);
+  const avgMonthly = Math.round(displayTotal / (activeYearData.length || 1));
 
-  let peakMonth = { month: 'Sep', revenue: 0 };
-  if (data.length > 0) {
-    peakMonth = data.reduce(
-      (prev, curr) => (curr.revenue > prev.revenue ? curr : prev),
-      data[0]
-    );
-  }
+  // Find peak
+  const peakItem = chartItems.reduce(
+    (prev, curr) => (curr.revenue > prev.revenue ? curr : prev),
+    chartItems[0]
+  );
 
-  const maxRevenue = Math.max(...data.map((d) => d.revenue), 1);
-  const activeMonth =
-    activeMonthIdx !== null && data[activeMonthIdx]
-      ? data[activeMonthIdx]
-      : null;
+  // SVG Chart Geometry
+  const cardPadding = 14;
+  const chartWidth = Math.max(containerWidth - cardPadding * 2, 280);
+  const chartHeight = 170;
+  const padLeft = 46;
+  const padRight = 14;
+  const padBottom = 26;
+  const padTop = 18;
+
+  const innerW = chartWidth - padLeft - padRight;
+  const innerH = chartHeight - padTop - padBottom;
+
+  // Grid line values
+  const yTicks = [0, 0.5, 1].map((pct) => ({
+    pct,
+    y: padTop + innerH - pct * innerH,
+    value: Math.round(maxVal * pct),
+  }));
+
+  const formatShortINR = (num: number) => {
+    if (num >= 100000) return `₹${(num / 100000).toFixed(1)}L`;
+    if (num >= 1000) return `₹${Math.round(num / 1000)}k`;
+    return `₹${num}`;
+  };
+
+  const activeItem =
+    activeIdx !== null && chartItems[activeIdx] ? chartItems[activeIdx] : null;
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} onLayout={onLayout}>
       {/* Header */}
       <View style={styles.header}>
         <View>
           <View style={styles.titleRow}>
-            <Calendar size={15} color={THEME.colors.textPrimary} strokeWidth={2.2} />
+            <BarChart3
+              size={16}
+              color={THEME.colors.textPrimary}
+              strokeWidth={2.4}
+            />
             <Text style={styles.title}>Year Sales</Text>
+            <View style={styles.growthBadge}>
+              <ArrowUpRight size={11} color="#047857" strokeWidth={2.6} />
+              <Text style={styles.growthText}>
+                {selectedYear === '2026' ? '+18.4%' : '+12.1%'}
+              </Text>
+            </View>
           </View>
-          <Text style={styles.subtitle}>Annual performance & revenue target</Text>
+          <Text style={styles.subtitle}>Annual bar chart & progress</Text>
         </View>
 
-        {/* Year Pill Selector */}
-        <View style={styles.yearSwitchWrap}>
-          {(['2026', '2025'] as const).map((year) => (
+        {/* View Mode & Year Switchers */}
+        <View style={styles.controlsRow}>
+          <View style={styles.segmentedPill}>
             <TouchableOpacity
-              key={year}
-              onPress={() => setSelectedYear(year)}
+              onPress={() => {
+                setViewMode('monthly');
+                setActiveIdx(null);
+              }}
               style={[
-                styles.yearTab,
-                selectedYear === year && styles.yearTabActive,
+                styles.pillBtn,
+                viewMode === 'monthly' && styles.pillBtnActive,
               ]}
               activeOpacity={0.7}
             >
               <Text
                 style={[
-                  styles.yearTabText,
-                  selectedYear === year && styles.yearTabTextActive,
+                  styles.pillText,
+                  viewMode === 'monthly' && styles.pillTextActive,
                 ]}
               >
-                {year}
+                M
               </Text>
             </TouchableOpacity>
-          ))}
+            <TouchableOpacity
+              onPress={() => {
+                setViewMode('quarterly');
+                setActiveIdx(null);
+              }}
+              style={[
+                styles.pillBtn,
+                viewMode === 'quarterly' && styles.pillBtnActive,
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  viewMode === 'quarterly' && styles.pillTextActive,
+                ]}
+              >
+                Q
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.segmentedPill}>
+            {(['2026', '2025'] as const).map((yr) => (
+              <TouchableOpacity
+                key={yr}
+                onPress={() => {
+                  setSelectedYear(yr);
+                  setActiveIdx(null);
+                }}
+                style={[
+                  styles.pillBtn,
+                  selectedYear === yr && styles.pillBtnActive,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    selectedYear === yr && styles.pillTextActive,
+                  ]}
+                >
+                  {yr}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
-      {/* Main Revenue Metric */}
-      <View style={styles.metricBlock}>
-        <View style={styles.metricTop}>
+      {/* Hero Metric */}
+      <View style={styles.heroRow}>
+        <View>
           <Text style={styles.revenueAmount}>
             ₹{displayTotal.toLocaleString('en-IN')}
           </Text>
-          <View style={styles.growthBadge}>
-            <ArrowUpRight size={12} color="#047857" strokeWidth={2.5} />
-            <Text style={styles.growthText}>
-              {selectedYear === '2026' ? '+18.4%' : '+12.1%'}
+          <Text style={styles.revenueSub}>
+            {selectedYear === '2026'
+              ? `YTD recorded revenue (${totalOrders} orders)`
+              : `FY 2025 total revenue`}
+          </Text>
+        </View>
+
+        {activeItem ? (
+          <View style={styles.activeInspectBadge}>
+            <Text style={styles.activeInspectLabel}>{activeItem.label}</Text>
+            <Text style={styles.activeInspectVal}>
+              ₹{activeItem.revenue.toLocaleString('en-IN')}
             </Text>
           </View>
-        </View>
-        <Text style={styles.revenueSub}>
-          {selectedYear === '2026'
-            ? `YTD recorded revenue across ${totalOrders} orders`
-            : `Full FY 2025 audited revenue`}
-        </Text>
+        ) : (
+          <View style={styles.peakInspectBadge}>
+            <Award size={12} color="#047857" strokeWidth={2.5} />
+            <Text style={styles.peakInspectText}>
+              Peak: {peakItem.label} ({formatShortINR(peakItem.revenue)})
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Target Progress Bar */}
-      <View style={styles.targetSection}>
-        <View style={styles.targetHeader}>
-          <View style={styles.targetLabelWrap}>
-            <Target size={13} color={THEME.colors.textSecondary} />
+      <View style={styles.targetWrap}>
+        <View style={styles.targetInfo}>
+          <View style={styles.targetLabelRow}>
+            <Target size={12} color={THEME.colors.textSecondary} />
             <Text style={styles.targetLabel}>
-              Target: ₹{displayTarget.toLocaleString('en-IN')}
+              Target: {formatShortINR(displayTarget)}
             </Text>
           </View>
-          <Text style={styles.targetPercent}>{progressPercent}% achieved</Text>
+          <Text style={styles.targetPercentage}>{progressPercent}% achieved</Text>
         </View>
-
-        <View style={styles.progressTrack}>
+        <View style={styles.targetTrack}>
           <View
-            style={[
-              styles.progressFill,
-              { width: `${progressPercent}%` },
-            ]}
+            style={[styles.targetFill, { width: `${progressPercent}%` }]}
           />
         </View>
       </View>
 
-      {/* Monthly Mini Bar Chart */}
-      {data.length > 0 && (
-        <View style={styles.chartSection}>
-          <View style={styles.chartHeader}>
-            <Text style={styles.chartLabel}>Monthly Distribution</Text>
-            {activeMonth ? (
-              <Text style={styles.activeTooltip}>
-                {activeMonth.month}: ₹{activeMonth.revenue.toLocaleString('en-IN')}
-              </Text>
-            ) : (
-              <Text style={styles.chartHint}>Tap bar to inspect</Text>
-            )}
-          </View>
+      {/* Vertical Bar Chart Graph */}
+      <View style={styles.chartWrapper}>
+        <Svg width={chartWidth} height={chartHeight}>
+          {/* Horizontal Grid lines and Y-axis labels */}
+          {yTicks.map((tick, i) => (
+            <G key={`tick-${i}`}>
+              <Line
+                x1={padLeft}
+                y1={tick.y}
+                x2={chartWidth - padRight}
+                y2={tick.y}
+                stroke="#e2e8f0"
+                strokeWidth={1}
+                strokeDasharray={i > 0 && i < yTicks.length - 1 ? '4,4' : undefined}
+              />
+              <SvgText
+                x={padLeft - 6}
+                y={tick.y + 3.5}
+                fontSize={10}
+                fontWeight="500"
+                fill="#94a3b8"
+                textAnchor="end"
+              >
+                {formatShortINR(tick.value)}
+              </SvgText>
+            </G>
+          ))}
 
-          <View style={styles.barsContainer}>
-            {data.map((item, idx) => {
-              const isPeak = item.month === peakMonth.month;
-              const isSelected = activeMonthIdx === idx;
-              const heightPercent = Math.max(
-                Math.round((item.revenue / maxRevenue) * 100),
-                10
-              );
+          {/* Vertical Bars */}
+          {chartItems.map((item, idx) => {
+            const count = chartItems.length;
+            const slotW = innerW / count;
+            const barW = Math.min(Math.max(slotW * 0.62, 14), 32);
+            const x = padLeft + idx * slotW + (slotW - barW) / 2;
 
-              return (
-                <TouchableOpacity
-                  key={item.month}
-                  style={styles.barCol}
-                  onPress={() =>
-                    setActiveMonthIdx(activeMonthIdx === idx ? null : idx)
-                  }
-                  activeOpacity={0.8}
+            const barH =
+              maxVal > 0 ? (item.revenue / maxVal) * innerH : 0;
+            const y = padTop + innerH - barH;
+
+            const isPeak = item.label === peakItem.label;
+            const isSelected = activeIdx === idx;
+
+            // Bar fill color logic
+            let barColor = '#334155'; // default slate-700
+            if (isSelected) {
+              barColor = '#2563eb'; // blue-600 active
+            } else if (isPeak) {
+              barColor = '#0f172a'; // slate-900 peak
+            } else if (item.revenue === 0) {
+              barColor = '#f1f5f9';
+            }
+
+            return (
+              <G
+                key={`bar-${item.label}-${idx}`}
+                onPress={() => setActiveIdx(activeIdx === idx ? null : idx)}
+              >
+                {/* Background hover touch area */}
+                <Rect
+                  x={padLeft + idx * slotW}
+                  y={padTop}
+                  width={slotW}
+                  height={innerH}
+                  fill="transparent"
+                />
+
+                {/* Main Vertical Bar */}
+                {barH > 0 && (
+                  <Rect
+                    x={x}
+                    y={y}
+                    width={barW}
+                    height={barH}
+                    rx={3}
+                    fill={barColor}
+                  />
+                )}
+
+                {/* Peak Indicator Dot above the highest bar */}
+                {isPeak && barH > 0 && (
+                  <Rect
+                    x={x + barW / 2 - 2}
+                    y={y - 6}
+                    width={4}
+                    height={4}
+                    rx={2}
+                    fill="#10b981"
+                  />
+                )}
+
+                {/* X-axis Month / Quarter Label */}
+                <SvgText
+                  x={x + barW / 2}
+                  y={chartHeight - 6}
+                  fontSize={10.5}
+                  fontWeight={isSelected || isPeak ? '700' : '500'}
+                  fill={isSelected ? '#2563eb' : isPeak ? '#0f172a' : '#64748b'}
+                  textAnchor="middle"
                 >
-                  <View style={styles.barTrack}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        { height: `${heightPercent}%` },
-                        isPeak && styles.barFillPeak,
-                        isSelected && styles.barFillSelected,
-                      ]}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      styles.barMonth,
-                      isPeak && styles.barMonthPeak,
-                      isSelected && styles.barMonthSelected,
-                    ]}
-                  >
-                    {item.month}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-      )}
+                  {item.label}
+                </SvgText>
+              </G>
+            );
+          })}
+        </Svg>
+      </View>
 
-      {/* Summary Stats Row */}
-      <View style={styles.statsGrid}>
-        <View style={styles.statBox}>
-          <Text style={styles.statBoxLabel}>Avg. Monthly</Text>
-          <Text style={styles.statBoxValue}>
-            ₹{avgMonthly.toLocaleString('en-IN')}
+      {/* Bottom 3 Metric Highlights */}
+      <View style={styles.metricsFooter}>
+        <View style={styles.footerItem}>
+          <Text style={styles.footerItemLabel}>Avg / Month</Text>
+          <Text style={styles.footerItemValue}>
+            {formatShortINR(avgMonthly)}
           </Text>
         </View>
 
-        <View style={styles.statBox}>
-          <View style={styles.statBoxLabelRow}>
-            <Award size={11} color="#f59e0b" strokeWidth={2.5} />
-            <Text style={styles.statBoxLabel}>Peak Month</Text>
+        <View style={styles.footerItem}>
+          <View style={styles.footerLabelRow}>
+            <Award size={10} color="#f59e0b" strokeWidth={2.4} />
+            <Text style={styles.footerItemLabel}>Peak</Text>
           </View>
-          <Text style={styles.statBoxValue}>
-            {peakMonth.month} (₹{(peakMonth.revenue / 100000).toFixed(2)}L)
+          <Text style={styles.footerItemValue}>
+            {peakItem.label} ({formatShortINR(peakItem.revenue)})
           </Text>
         </View>
 
-        <View style={styles.statBox}>
-          <View style={styles.statBoxLabelRow}>
-            <TrendingUp size={11} color="#10b981" strokeWidth={2.5} />
-            <Text style={styles.statBoxLabel}>Run Rate</Text>
+        <View style={styles.footerItem}>
+          <View style={styles.footerLabelRow}>
+            <TrendingUp size={10} color="#10b981" strokeWidth={2.4} />
+            <Text style={styles.footerItemLabel}>Run Rate</Text>
           </View>
-          <Text style={styles.statBoxValue}>
-            ₹{((avgMonthly * 12) / 100000).toFixed(2)} L/yr
+          <Text style={styles.footerItemValue}>
+            ₹{((avgMonthly * 12) / 100000).toFixed(1)} L/yr
           </Text>
         </View>
       </View>
@@ -238,7 +438,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 10,
+    gap: 8,
   },
   titleRow: {
     flexDirection: 'row',
@@ -250,24 +451,42 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: THEME.colors.textPrimary,
   },
+  growthBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    gap: 2,
+  },
+  growthText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#047857',
+  },
   subtitle: {
     fontSize: 12,
     color: THEME.colors.textSecondary,
     marginTop: 2,
   },
-  yearSwitchWrap: {
+  controlsRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  segmentedPill: {
     flexDirection: 'row',
     backgroundColor: '#f1f5f9',
     borderRadius: 4,
     padding: 2,
-    gap: 2,
+    gap: 1,
   },
-  yearTab: {
-    paddingHorizontal: 8,
+  pillBtn: {
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 3,
   },
-  yearTabActive: {
+  pillBtnActive: {
     backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -275,188 +494,139 @@ const styles = StyleSheet.create({
     shadowRadius: 1,
     elevation: 1,
   },
-  yearTabText: {
-    fontSize: 11,
+  pillText: {
+    fontSize: 10.5,
     fontWeight: '500',
     color: THEME.colors.textSecondary,
   },
-  yearTabTextActive: {
+  pillTextActive: {
     fontWeight: '700',
     color: THEME.colors.textPrimary,
   },
-  metricBlock: {
-    marginBottom: 14,
-  },
-  metricTop: {
+  heroRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 10,
   },
   revenueAmount: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: '800',
     color: THEME.colors.textPrimary,
-    letterSpacing: -0.5,
-  },
-  growthBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ecfdf5',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 2,
-  },
-  growthText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#047857',
+    letterSpacing: -0.4,
   },
   revenueSub: {
-    fontSize: 11.5,
+    fontSize: 11,
     color: THEME.colors.textSecondary,
     marginTop: 2,
   },
-  targetSection: {
-    marginBottom: 14,
-    padding: 10,
+  activeInspectBadge: {
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignItems: 'flex-end',
+  },
+  activeInspectLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#1d4ed8',
+    textTransform: 'uppercase',
+  },
+  activeInspectVal: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#1e40af',
+  },
+  peakInspectBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  peakInspectText: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#15803d',
+  },
+  targetWrap: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#f1f5f9',
+    padding: 8,
+    marginBottom: 8,
   },
-  targetHeader: {
+  targetInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 5,
   },
-  targetLabelWrap: {
+  targetLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   targetLabel: {
-    fontSize: 11.5,
-    fontWeight: '500',
+    fontSize: 11,
     color: THEME.colors.textSecondary,
+    fontWeight: '500',
   },
-  targetPercent: {
-    fontSize: 11.5,
-    fontWeight: '700',
+  targetPercentage: {
+    fontSize: 11,
     color: '#047857',
+    fontWeight: '700',
   },
-  progressTrack: {
-    height: 7,
+  targetTrack: {
+    height: 6,
     backgroundColor: '#e2e8f0',
     borderRadius: 3,
     overflow: 'hidden',
   },
-  progressFill: {
+  targetFill: {
     height: '100%',
     backgroundColor: '#10b981',
     borderRadius: 3,
   },
-  chartSection: {
-    marginBottom: 14,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  chartWrapper: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginVertical: 4,
   },
-  chartLabel: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    color: THEME.colors.textPrimary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  chartHint: {
-    fontSize: 10.5,
-    color: THEME.colors.textMuted,
-  },
-  activeTooltip: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#2563eb',
-  },
-  barsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 68,
-    gap: 4,
-    paddingTop: 4,
-  },
-  barCol: {
-    flex: 1,
-    alignItems: 'center',
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
-  barTrack: {
-    flex: 1,
-    width: '100%',
-    maxHeight: 50,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 2,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-  },
-  barFill: {
-    width: '100%',
-    backgroundColor: '#94a3b8',
-    borderRadius: 2,
-  },
-  barFillPeak: {
-    backgroundColor: '#09090b',
-  },
-  barFillSelected: {
-    backgroundColor: '#2563eb',
-  },
-  barMonth: {
-    fontSize: 9.5,
-    color: THEME.colors.textMuted,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  barMonthPeak: {
-    color: THEME.colors.textPrimary,
-    fontWeight: '700',
-  },
-  barMonthSelected: {
-    color: '#2563eb',
-    fontWeight: '700',
-  },
-  statsGrid: {
+  metricsFooter: {
     flexDirection: 'row',
     gap: 6,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
     paddingTop: 10,
+    marginTop: 6,
   },
-  statBox: {
+  footerItem: {
     flex: 1,
     backgroundColor: '#f8fafc',
-    padding: 8,
-    borderRadius: 0,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  statBoxLabelRow: {
+  footerLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    marginBottom: 2,
   },
-  statBoxLabel: {
-    fontSize: 10,
+  footerItemLabel: {
+    fontSize: 9.5,
     color: THEME.colors.textMuted,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
-  statBoxValue: {
+  footerItemValue: {
     fontSize: 11.5,
     fontWeight: '700',
     color: THEME.colors.textPrimary,
