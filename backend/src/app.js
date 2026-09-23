@@ -4,6 +4,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const productRoutes = require('./routes/productRoutes');
 const customerRoutes = require('./routes/customerRoutes');
+const authRoutes = require('./routes/authRoutes');
 const dashboardController = require('./controllers/dashboardController');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount modular API routes
+app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/products', productRoutes);

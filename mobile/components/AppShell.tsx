@@ -29,7 +29,9 @@ import {
   ChevronsUpDown,
   ChevronRight,
   Database,
+  LogOut,
 } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
 
 export type NavTabKey = 'Overview' | 'Sales' | 'Fleet sales' | 'Customers' | 'Reports';
 
@@ -73,6 +75,11 @@ export const AppShell: React.FC<AppShellProps> = ({
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
   const isCompact = width < 720;
+
+  const { user, logout } = useAuth();
+  const userInitials = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'GP';
 
   const [mobileMenuOpen,   setMobileMenuOpen]   = useState(false);
   const [searchVal,        setSearchVal]        = useState('');
@@ -166,6 +173,15 @@ export const AppShell: React.FC<AppShellProps> = ({
           <Settings size={16} color={THEME.colors.textSecondary} />
           <Text style={styles.navItemText}>Preferences</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navItem, { marginTop: 2 }]}
+          activeOpacity={0.7}
+          onPress={logout}
+        >
+          <LogOut size={16} color="#ef4444" />
+          <Text style={[styles.navItemText, { color: '#ef4444', fontWeight: '600' }]}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -249,14 +265,24 @@ export const AppShell: React.FC<AppShellProps> = ({
               {/* User Profile */}
               <View style={styles.userProfile}>
                 <View style={styles.userAvatar}>
-                  <Text style={styles.userAvatarText}>GP</Text>
+                  <Text style={styles.userAvatarText}>{userInitials}</Text>
                 </View>
                 {isDesktop && (
                   <View style={styles.userInfoCol}>
-                    <Text style={styles.userName}>Ganesh Paidi</Text>
-                    <Text style={styles.userRole}>Admin</Text>
+                    <Text style={styles.userName} numberOfLines={1}>
+                      {user?.name || 'Ganesh Paidi'}
+                    </Text>
+                    <Text style={styles.userRole}>{user?.role || 'Admin'}</Text>
                   </View>
                 )}
+                <TouchableOpacity
+                  style={[styles.iconButton, { marginLeft: 4 }]}
+                  activeOpacity={0.7}
+                  onPress={logout}
+                  accessibilityLabel="Sign Out"
+                >
+                  <LogOut size={14} color={THEME.colors.textMuted} />
+                </TouchableOpacity>
               </View>
             </View>
           </View>
