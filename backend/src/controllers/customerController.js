@@ -34,7 +34,7 @@ exports.getCustomers = async (req, res, next) => {
 
     query += `
       GROUP BY c.id, c.name, c.email, c.phone, c.region, c.created_at
-      ORDER BY totalSpending DESC, totalOrders DESC
+      ORDER BY 8 DESC, 7 DESC
     `;
 
     const [rows] = await pool.query(query, params);
