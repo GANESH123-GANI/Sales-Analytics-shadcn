@@ -2,9 +2,11 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.extraNodeModules = {
-  ...config.resolver.extraNodeModules,
-  buffer: require.resolve('buffer'),
-};
+try {
+  config.resolver.extraNodeModules = {
+    ...config.resolver.extraNodeModules,
+    buffer: require.resolve('buffer'),
+  };
+} catch (e) {}
 
 module.exports = config;

@@ -1,6 +1,5 @@
 [build]
-  command = "npm run build"
-  publish = "mobile/dist"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
