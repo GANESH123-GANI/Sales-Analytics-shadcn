@@ -28,7 +28,6 @@
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
-    "sales-analytics-root": "file:..",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {

@@ -11,8 +11,6 @@ backend/.env
 
 # Expo / React Native
 .expo/
-dist/
-mobile/dist/
 web-build/
 
 # Logs
