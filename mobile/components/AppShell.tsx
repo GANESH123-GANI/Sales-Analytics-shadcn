@@ -9,8 +9,8 @@ import {
   ScrollView,
   useWindowDimensions,
   Platform,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, usePathname } from 'expo-router';
 import { THEME } from '../constants/theme';
 import {
