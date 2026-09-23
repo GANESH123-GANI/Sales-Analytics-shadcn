@@ -25,6 +25,10 @@ import {
   Layers,
   Menu,
   X,
+  Building2,
+  ChevronsUpDown,
+  ChevronRight,
+  Database,
 } from 'lucide-react-native';
 
 export type NavTabKey = 'Overview' | 'Sales' | 'Fleet sales' | 'Customers' | 'Reports';
@@ -34,14 +38,15 @@ interface NavItemConfig {
   label: string;
   route: string;
   icon: any;
+  badge?: string;
 }
 
 const NAV_ITEMS: NavItemConfig[] = [
   { key: 'Overview',    label: 'Overview',    route: '/',          icon: LayoutDashboard },
-  { key: 'Sales',       label: 'Sales',       route: '/sales',     icon: ShoppingBag },
-  { key: 'Fleet sales', label: 'Fleet sales', route: '/products',  icon: Package },
-  { key: 'Customers',   label: 'Customers',   route: '/customers', icon: Users },
-  { key: 'Reports',     label: 'Reports',     route: '/reports',   icon: BarChart3 },
+  { key: 'Sales',       label: 'Sales',       route: '/sales',     icon: ShoppingBag,   badge: '15' },
+  { key: 'Fleet sales', label: 'Products',    route: '/products',  icon: Package,       badge: '12' },
+  { key: 'Customers',   label: 'Customers',   route: '/customers', icon: Users,         badge: '8' },
+  { key: 'Reports',     label: 'Reports',     route: '/reports',   icon: BarChart3,     badge: 'P&L' },
 ];
 
 interface AppShellProps {
@@ -61,7 +66,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   headerRight,
   children,
   onSearch,
-  searchPlaceholder = 'Search sales, clients, products...',
+  searchPlaceholder = 'Search sales, products, customers...',
 }) => {
   const router   = useRouter();
   const pathname = usePathname();
@@ -87,30 +92,26 @@ export const AppShell: React.FC<AppShellProps> = ({
   // ─── Sidebar ────────────────────────────────────────────────────────────────
   const Sidebar = () => (
     <View style={[styles.sidebar, !isDesktop && styles.mobileSidebarOverlay]}>
-      {/* Logo */}
-      <View style={styles.sidebarHeader}>
-        <View style={styles.logoBadge}>
-          <Layers size={15} color="#ffffff" />
+      {/* Workspace / Org Switcher (Classic shadcn/ui Sidebar pattern) */}
+      <View style={styles.workspaceSwitcher}>
+        <View style={styles.workspaceIconBox}>
+          <Building2 size={16} color="#ffffff" />
         </View>
-        <Text style={styles.logoTitle}>SalesAnalytics</Text>
-        {!isDesktop && (
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={() => setMobileMenuOpen(false)}
-          >
-            <X size={18} color={THEME.colors.textSecondary} />
-          </TouchableOpacity>
-        )}
+        <View style={styles.workspaceInfo}>
+          <Text style={styles.workspaceName}>Enterprise Corp</Text>
+          <Text style={styles.workspacePlan}>Analytics Pro</Text>
+        </View>
+        <ChevronsUpDown size={14} color={THEME.colors.textMuted} />
       </View>
 
       {/* Nav section label */}
-      <Text style={styles.navSectionLabel}>MAIN MENU</Text>
+      <Text style={styles.navSectionLabel}>PLATFORM</Text>
 
       {/* Navigation List */}
       <View style={styles.navList}>
         {NAV_ITEMS.map((item) => {
           const IconComponent = item.icon;
-          const isActive = item.key === activeTab;
+          const isActive = item.key === activeTab || (item.key === 'Fleet sales' && activeTab === 'Fleet sales');
           return (
             <TouchableOpacity
               key={item.key}
@@ -125,21 +126,32 @@ export const AppShell: React.FC<AppShellProps> = ({
               <Text style={[styles.navItemText, isActive && styles.navItemTextActive]}>
                 {item.label}
               </Text>
-              {isActive && <View style={styles.activeIndicator} />}
+              {item.badge && (
+                <View style={[styles.navBadge, isActive && styles.navBadgeActive]}>
+                  <Text style={[styles.navBadgeText, isActive && styles.navBadgeTextActive]}>
+                    {item.badge}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* Bottom: Settings */}
+      {/* Bottom Footer: Database Status & Settings */}
       <View style={styles.sidebarFooter}>
+        <View style={styles.dbStatusPill}>
+          <View style={styles.dbLiveDot} />
+          <Text style={styles.dbStatusText}>Neon PostgreSQL</Text>
+        </View>
+
         <TouchableOpacity
           style={styles.navItem}
           activeOpacity={0.7}
           onPress={() => setSettingsVisible(true)}
         >
           <Settings size={16} color={THEME.colors.textSecondary} />
-          <Text style={styles.navItemText}>Settings</Text>
+          <Text style={styles.navItemText}>Preferences</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -165,7 +177,18 @@ export const AppShell: React.FC<AppShellProps> = ({
                 </TouchableOpacity>
               )}
 
-              {/* Global Search */}
+              {/* Breadcrumb path (shadcn style) */}
+              {isDesktop && (
+                <View style={styles.breadcrumbBar}>
+                  <Text style={styles.breadcrumbRoot}>Dashboard</Text>
+                  <ChevronRight size={13} color={THEME.colors.textMuted} />
+                  <Text style={styles.breadcrumbActive}>
+                    {activeTab === 'Fleet sales' ? 'Products' : activeTab}
+                  </Text>
+                </View>
+              )}
+
+              {/* Global Search with ⌘K Badge */}
               <View style={[styles.searchBarContainer, isCompact && styles.searchBarCompact]}>
                 <Search size={14} color={THEME.colors.textMuted} style={styles.searchIcon} />
                 <TextInput
@@ -176,11 +199,22 @@ export const AppShell: React.FC<AppShellProps> = ({
                   onChangeText={handleSearchChange}
                   {...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : {})}
                 />
+                {!isCompact && (
+                  <View style={styles.cmdShortcutBadge}>
+                    <Text style={styles.cmdShortcutText}>⌘K</Text>
+                  </View>
+                )}
               </View>
             </View>
 
             {/* Top Bar Right */}
             <View style={styles.topBarRight}>
+              {/* Live Status Badge */}
+              <View style={styles.liveCloudBadge}>
+                <View style={styles.livePulseDot} />
+                <Text style={styles.liveCloudText}>Connected</Text>
+              </View>
+
               <TouchableOpacity
                 style={styles.iconButton}
                 activeOpacity={0.7}
@@ -190,11 +224,17 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <View style={styles.notifDot} />
               </TouchableOpacity>
 
+              {/* User Profile */}
               <View style={styles.userProfile}>
                 <View style={styles.userAvatar}>
-                  <Text style={styles.userAvatarText}>JD</Text>
+                  <Text style={styles.userAvatarText}>GP</Text>
                 </View>
-                {isDesktop && <Text style={styles.userName}>James Doe</Text>}
+                {isDesktop && (
+                  <View style={styles.userInfoCol}>
+                    <Text style={styles.userName}>Ganesh Paidi</Text>
+                    <Text style={styles.userRole}>Admin</Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -341,6 +381,87 @@ const styles = StyleSheet.create({
     borderTopColor: THEME.colors.borderSubtle,
     paddingTop: 10,
     marginTop: 10,
+    gap: 8,
+  },
+  workspaceSwitcher: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 8,
+    borderRadius: THEME.radius.md,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    backgroundColor: THEME.colors.muted,
+    marginBottom: 20,
+  },
+  workspaceIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: THEME.radius.sm,
+    backgroundColor: THEME.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  workspaceInfo: {
+    flex: 1,
+  },
+  workspaceName: {
+    fontSize: THEME.fontSize.base,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+    color: THEME.colors.textPrimary,
+  },
+  workspacePlan: {
+    fontSize: 10,
+    color: THEME.colors.textMuted,
+    fontFamily: THEME.fontFamily.medium,
+  },
+  navBadge: {
+    marginLeft: 'auto',
+    backgroundColor: THEME.colors.secondary,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: THEME.radius.full,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+  },
+  navBadgeActive: {
+    backgroundColor: THEME.colors.primary,
+    borderColor: THEME.colors.primary,
+  },
+  navBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+    color: THEME.colors.textSecondary,
+  },
+  navBadgeTextActive: {
+    color: THEME.colors.primaryForeground,
+  },
+  dbStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#ecfdf5',
+    borderRadius: THEME.radius.full,
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  dbLiveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: THEME.radius.full,
+    backgroundColor: '#059669',
+  },
+  dbStatusText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#047857',
+    fontFamily: THEME.fontFamily.semibold,
   },
 
   // ─── Main Viewport ─────────────────────────────────────────────────────────
@@ -367,7 +488,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     minWidth: 0,
-    gap: 10,
+    gap: 14,
+  },
+  breadcrumbBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginRight: 6,
+  },
+  breadcrumbRoot: {
+    fontSize: THEME.fontSize.sm,
+    color: THEME.colors.textMuted,
+    fontFamily: THEME.fontFamily.medium,
+  },
+  breadcrumbActive: {
+    fontSize: THEME.fontSize.sm,
+    color: THEME.colors.textPrimary,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+  },
+  cmdShortcutBadge: {
+    backgroundColor: THEME.colors.card,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: THEME.radius.xs,
+  },
+  cmdShortcutText: {
+    fontSize: 10,
+    color: THEME.colors.textMuted,
+    fontWeight: '600',
+    fontFamily: THEME.fontFamily.semibold,
+  },
+  liveCloudBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    borderRadius: THEME.radius.full,
+  },
+  livePulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: THEME.radius.full,
+    backgroundColor: '#10b981',
+  },
+  liveCloudText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#047857',
+    fontFamily: THEME.fontFamily.semibold,
+  },
+  userInfoCol: {
+    gap: 1,
+  },
+  userRole: {
+    fontSize: 10,
+    color: THEME.colors.textMuted,
+    fontFamily: THEME.fontFamily.regular,
   },
   menuToggle: {
     padding: 6,
