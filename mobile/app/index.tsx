@@ -23,6 +23,7 @@ import { RevenueChart } from '../components/RevenueChart';
 import { CategoryChart } from '../components/CategoryChart';
 import { RegionChart } from '../components/RegionChart';
 import { OrderStatusChart } from '../components/OrderStatusChart';
+import { YearSalesCard } from '../components/YearSalesCard';
 import { LoadingView } from '../components/LoadingView';
 import {
   getDashboardAll,
@@ -181,6 +182,11 @@ export default function DashboardScreen() {
             onRowAction={() => router.push('/sales')}
           />
           <OrderStatusChart data={orderStatus} />
+          <YearSalesCard
+            data={monthlyRevenue}
+            totalRevenue={summary?.totalRevenue}
+            totalOrders={summary?.totalOrders}
+          />
         </View>
       );
     }
@@ -244,6 +250,11 @@ export default function DashboardScreen() {
 
           <View style={styles.rightCol}>
             <OrderStatusChart data={orderStatus} />
+            <YearSalesCard
+              data={monthlyRevenue}
+              totalRevenue={summary?.totalRevenue}
+              totalOrders={summary?.totalOrders}
+            />
           </View>
         </View>
 
@@ -301,7 +312,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   leftCol: { flex: 1.4, gap: 16 },
-  rightCol: { flex: 1 },
+  rightCol: { flex: 1, gap: 16 },
 
   // Cell styles — centralized here to keep pages DRY
   cellBold: {
