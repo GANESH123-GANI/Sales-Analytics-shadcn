@@ -1,5 +1,4 @@
 const path = require('path');
-const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
 
 // Load environment variables reliably from backend/.env or root .env
@@ -7,42 +6,125 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
-const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+const dbUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || process.env.POSTGRES_URL || process.env.MYSQL_URL;
+const isPostgres = dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'));
 
-const poolConfig = dbUrl
-  ? {
-      uri: dbUrl,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-      decimalNumbers: true,
-      ssl: process.env.DB_SSL === 'false' ? undefined : (process.env.DB_SSL === 'true' || dbUrl.includes('ssl') ? { rejectUnauthorized: false } : undefined)
-    }
-  : {
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'sales_analytics',
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-      decimalNumbers: true,
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
-    };
+let pool;
 
-const pool = mysql.createPool(poolConfig);
+if (isPostgres) {
+  const { Pool } = require('pg');
 
-// Test connection on boot
-(async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log(`[Database] Connected successfully to MySQL database "${process.env.DB_NAME || 'sales_analytics'}" at ${process.env.DB_HOST || 'localhost'}`);
-    connection.release();
-  } catch (error) {
-    console.error('[Database] Initial connection error:', error.message);
-    console.error('[Database] Verify that MySQL is running and credentials in backend/.env are correct.');
+  const pgPool = new Pool({
+    connectionString: dbUrl,
+    ssl: { rejectUnauthorized: false },
+    max: 10,
+    idleTimeoutMillis: 30000,
+  });
+
+  /**
+   * Helper that translates MySQL syntax to PostgreSQL syntax:
+   * 1. Replaces ? placeholders with $1, $2, ...
+   * 2. Replaces DATE_FORMAT(expr, '%b') with TO_CHAR(expr, 'Mon')
+   * 3. Replaces DATE_FORMAT(expr, '%Y-%m-%d') with TO_CHAR(expr, 'YYYY-MM-DD')
+   * 4. Replaces MONTH(expr) with CAST(EXTRACT(MONTH FROM expr) AS INTEGER)
+   * 5. Replaces YEAR(expr) with CAST(EXTRACT(YEAR FROM expr) AS INTEGER)
+   * 6. Replaces CAST(expr AS CHAR) with CAST(expr AS TEXT)
+   */
+  function adaptSqlForPostgres(sql) {
+    let pIndex = 1;
+    let adapted = sql
+      .replace(/DATE_FORMAT\s*\(\s*([^,]+)\s*,\s*'%b'\s*\)/gi, "TO_CHAR($1, 'Mon')")
+      .replace(/DATE_FORMAT\s*\(\s*([^,]+)\s*,\s*'%Y-%m-%d'\s*\)/gi, "TO_CHAR($1, 'YYYY-MM-DD')")
+      .replace(/MONTH\s*\(\s*([^)]+)\s*\)/gi, "CAST(EXTRACT(MONTH FROM $1) AS INTEGER)")
+      .replace(/YEAR\s*\(\s*([^)]+)\s*\)/gi, "CAST(EXTRACT(YEAR FROM $1) AS INTEGER)")
+      .replace(/CAST\s*\(\s*([^)]+)\s+AS\s+CHAR\s*\)/gi, "CAST($1 AS TEXT)")
+      .replace(/`/g, '"'); // Convert MySQL backticks to standard Postgres double quotes
+
+    // Replace ? with $1, $2, etc.
+    adapted = adapted.replace(/\?/g, () => `$${pIndex++}`);
+    return adapted;
   }
-})();
+
+  // Wrapped pool adhering to mysql2 [rows, fields] convention
+  pool = {
+    isPostgres: true,
+    pgPool,
+    async query(sql, params = []) {
+      const adaptedSql = adaptSqlForPostgres(sql);
+      const res = await pgPool.query(adaptedSql, params);
+      return [res.rows, res.fields];
+    },
+    async getConnection() {
+      const client = await pgPool.connect();
+      return {
+        async query(sql, params = []) {
+          const adaptedSql = adaptSqlForPostgres(sql);
+          const res = await client.query(adaptedSql, params);
+          return [res.rows, res.fields];
+        },
+        release() {
+          client.release();
+        },
+      };
+    },
+  };
+
+  // Test Neon connection on boot
+  (async () => {
+    try {
+      const client = await pgPool.connect();
+      console.log('[Database] Connected successfully to Neon PostgreSQL database!');
+      client.release();
+    } catch (error) {
+      console.error('[Database] Neon PostgreSQL connection error:', error.message);
+    }
+  })();
+} else {
+  // Standard MySQL driver
+  const mysql = require('mysql2/promise');
+
+  const poolConfig = dbUrl
+    ? {
+        uri: dbUrl,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        decimalNumbers: true,
+        ssl:
+          process.env.DB_SSL === 'false'
+            ? undefined
+            : process.env.DB_SSL === 'true' || dbUrl.includes('ssl')
+            ? { rejectUnauthorized: false }
+            : undefined,
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '3306', 10),
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'sales_analytics',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        decimalNumbers: true,
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+      };
+
+  pool = mysql.createPool(poolConfig);
+
+  (async () => {
+    try {
+      const connection = await pool.getConnection();
+      console.log(
+        `[Database] Connected successfully to MySQL database "${process.env.DB_NAME || 'sales_analytics'}" at ${
+          process.env.DB_HOST || 'localhost'
+        }`
+      );
+      connection.release();
+    } catch (error) {
+      console.error('[Database] MySQL connection error:', error.message);
+    }
+  })();
+}
 
 module.exports = pool;
