@@ -30,6 +30,75 @@ export function clearApiCache() {
   apiCache.clear();
 }
 
+import {
+  MOCK_CATEGORY_SALES,
+  MOCK_CUSTOMERS,
+  MOCK_MONTHLY_REVENUE,
+  MOCK_ORDER_STATUS,
+  MOCK_PRODUCTS,
+  MOCK_REGION_SALES,
+  MOCK_REPORTS,
+  MOCK_SALES,
+  MOCK_SUMMARY,
+} from './mockData';
+
+/**
+ * Intelligent fallback provider for demo & static hosting (e.g. Netlify)
+ */
+function getMockDataForEndpoint(endpoint: string): any {
+  if (endpoint.startsWith('/dashboard/summary')) return MOCK_SUMMARY;
+  if (endpoint.startsWith('/dashboard/monthly-revenue')) return MOCK_MONTHLY_REVENUE;
+  if (endpoint.startsWith('/dashboard/category-sales')) return MOCK_CATEGORY_SALES;
+  if (endpoint.startsWith('/dashboard/region-sales')) return MOCK_REGION_SALES;
+  if (endpoint.startsWith('/dashboard/order-status')) return MOCK_ORDER_STATUS;
+  if (endpoint.startsWith('/dashboard/all')) {
+    return {
+      summary: MOCK_SUMMARY,
+      monthlyRevenue: MOCK_MONTHLY_REVENUE,
+      categorySales: MOCK_CATEGORY_SALES,
+      regionSales: MOCK_REGION_SALES,
+      orderStatus: MOCK_ORDER_STATUS,
+    };
+  }
+  if (endpoint.startsWith('/sales')) {
+    const urlObj = new URL(`http://dummy${endpoint}`);
+    const search = (urlObj.searchParams.get('search') || '').toLowerCase();
+    const status = urlObj.searchParams.get('status') || '';
+    return MOCK_SALES.filter((s) => {
+      const matchSearch =
+        !search ||
+        s.customer.toLowerCase().includes(search) ||
+        s.customerEmail.toLowerCase().includes(search) ||
+        s.region.toLowerCase().includes(search);
+      const matchStatus = !status || status === 'All' || s.status === status;
+      return matchSearch && matchStatus;
+    });
+  }
+  if (endpoint.startsWith('/products')) {
+    const urlObj = new URL(`http://dummy${endpoint}`);
+    const search = (urlObj.searchParams.get('search') || '').toLowerCase();
+    return MOCK_PRODUCTS.filter(
+      (p) =>
+        !search ||
+        p.name.toLowerCase().includes(search) ||
+        p.category.toLowerCase().includes(search)
+    );
+  }
+  if (endpoint.startsWith('/customers')) {
+    const urlObj = new URL(`http://dummy${endpoint}`);
+    const search = (urlObj.searchParams.get('search') || '').toLowerCase();
+    return MOCK_CUSTOMERS.filter(
+      (c) =>
+        !search ||
+        c.name.toLowerCase().includes(search) ||
+        c.email.toLowerCase().includes(search) ||
+        c.region.toLowerCase().includes(search)
+    );
+  }
+  if (endpoint.startsWith('/reports')) return MOCK_REPORTS;
+  return null;
+}
+
 /**
  * Generic fetch wrapper with timeout, caching, and standard error handling
  */
@@ -64,6 +133,18 @@ async function apiRequest<T>(
 
     clearTimeout(timeoutId);
 
+    const contentType = response.headers.get('content-type') || '';
+
+    // If server returned HTML (e.g. Netlify fallback to index.html because backend isn't hosted)
+    if (!contentType.includes('application/json')) {
+      const mock = getMockDataForEndpoint(endpoint);
+      if (mock !== null) {
+        apiCache.set(cacheKey, { data: mock, timestamp: Date.now() });
+        return mock as T;
+      }
+      throw new Error(`Expected JSON but received ${contentType} from server.`);
+    }
+
     if (!response.ok) {
       let errorMessage = `HTTP error ${response.status}: ${response.statusText}`;
       try {
@@ -89,6 +170,14 @@ async function apiRequest<T>(
     return json.data;
   } catch (error: any) {
     clearTimeout(timeoutId);
+
+    // In static deployments (e.g. Netlify) or connection failures, gracefully fall back to rich demo dataset
+    const mock = getMockDataForEndpoint(endpoint);
+    if (mock !== null) {
+      apiCache.set(cacheKey, { data: mock, timestamp: Date.now() });
+      return mock as T;
+    }
+
     if (error.name === 'AbortError') {
       throw new Error(
         `Request timed out after ${Math.round(APP_CONFIG.apiTimeoutMs / 1000)}s.\nPlease verify backend is running at ${API_BASE_URL}`
