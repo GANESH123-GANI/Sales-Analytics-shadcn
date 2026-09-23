@@ -102,6 +102,7 @@ export default function ProductsScreen() {
     {
       key: 'stock',
       header: 'Inventory',
+      flex: 1,
       width: 130,
       render: (item) => {
         const isLow = (item.stock || 0) < 15;
@@ -125,6 +126,7 @@ export default function ProductsScreen() {
     {
       key: 'revenue',
       header: 'Gross Revenue',
+      flex: 1,
       width: 140,
       align: 'right',
       render: (item) => (

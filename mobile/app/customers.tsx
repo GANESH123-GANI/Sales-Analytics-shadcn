@@ -134,6 +134,7 @@ export default function CustomersScreen() {
     {
       key: 'region',
       header: 'Territory',
+      flex: 1,
       width: 130,
       render: (item) => <Text style={st.bold}>{item.region}</Text>,
     },
@@ -147,6 +148,7 @@ export default function CustomersScreen() {
     {
       key: 'totalSpending',
       header: 'Lifetime Value (LTV)',
+      flex: 1,
       width: 150,
       align: 'right',
       render: (item) => (

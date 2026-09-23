@@ -87,7 +87,28 @@ export function DataTable<T>({
     },
   ];
 
-  const renderHeaderCell = (col: Column<T>, isActionCell = false) => (
+  const hasAnyFlex = columns.some((c) => c.flex && !c.width);
+
+  const getColLayout = (col: Column<T>, isActionCell = false, colIdx = 0) => {
+    if (isActionCell) {
+      return { width: resolvedLayout.actionColumnWidth };
+    }
+    if (col.flex && !col.width) {
+      return { flex: col.flex, minWidth: 80, flexShrink: 1 };
+    }
+    if (col.width && !col.flex) {
+      if (!hasAnyFlex && colIdx === columns.length - 1) {
+        return { flex: 1, minWidth: col.width, flexShrink: 1 };
+      }
+      return { width: col.width };
+    }
+    if (col.width && col.flex) {
+      return { flex: col.flex, minWidth: col.width, flexShrink: 1 };
+    }
+    return { flex: 1, minWidth: 80, flexShrink: 1 };
+  };
+
+  const renderHeaderCell = (col: Column<T>, isActionCell = false, colIdx = 0) => (
     <View
       key={isActionCell ? 'action-header' : col.key}
       style={[
@@ -98,11 +119,7 @@ export function DataTable<T>({
           borderRightWidth: resolvedLayout.showBorders && !isActionCell ? 1 : 0,
           borderRightColor: resolvedLayout.borderColor,
         },
-        isActionCell
-          ? { width: resolvedLayout.actionColumnWidth, alignItems: 'center' }
-          : col.width
-            ? { width: col.width }
-            : { flex: col.flex || 1, minWidth: 80, flexShrink: 1 },
+        getColLayout(col, isActionCell, colIdx),
         (col.align === 'right' || isActionCell) && { alignItems: 'flex-end' },
         col.align === 'center' && { alignItems: 'center' },
       ]}
@@ -111,7 +128,7 @@ export function DataTable<T>({
     </View>
   );
 
-  const renderCell = (col: Column<T>, item: T, index: number, isActionCell = false) => (
+  const renderCell = (col: Column<T>, item: T, index: number, isActionCell = false, colIdx = 0) => (
     <View
       key={isActionCell ? 'action-cell' : col.key}
       style={[
@@ -122,11 +139,7 @@ export function DataTable<T>({
           borderRightWidth: resolvedLayout.showBorders && !isActionCell ? 1 : 0,
           borderRightColor: resolvedLayout.borderColor,
         },
-        isActionCell
-          ? { width: resolvedLayout.actionColumnWidth, alignItems: 'flex-end' }
-          : col.width
-            ? { width: col.width }
-            : { flex: col.flex || 1, minWidth: 80, flexShrink: 1 },
+        getColLayout(col, isActionCell, colIdx),
         col.align === 'right' && { alignItems: 'flex-end' },
         col.align === 'center' && { alignItems: 'center' },
       ]}
@@ -299,16 +312,20 @@ export function DataTable<T>({
         /* ─── Mode 2: Traditional Horizontal Scrolling Table ─── */
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={true}
+          showsHorizontalScrollIndicator={!isDesktop}
           showsVerticalScrollIndicator={false}
-          alwaysBounceHorizontal={true}
-          contentContainerStyle={{ minWidth: effectiveMinWidth }}
+          alwaysBounceHorizontal={!isDesktop}
+          style={styles.scrollWrapper}
+          contentContainerStyle={[
+            styles.scrollContentContainer,
+            { minWidth: isDesktop ? '100%' : effectiveMinWidth },
+          ]}
         >
-          <View style={[styles.table, { minWidth: effectiveMinWidth }]}>
+          <View style={[styles.table, { minWidth: isDesktop ? '100%' : effectiveMinWidth }]}>
             <View style={tableHeaderStyle}>
-              {columns.map((col) => renderHeaderCell(col))}
+              {columns.map((col, cIdx) => renderHeaderCell(col, false, cIdx))}
               {(actionButtonLabel || showActionMenu) &&
-                renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true)}
+                renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true, columns.length)}
             </View>
 
             {data.length === 0 ? (
@@ -328,13 +345,14 @@ export function DataTable<T>({
                     },
                   ]}
                 >
-                  {columns.map((col) => renderCell(col, item, index))}
+                  {columns.map((col, cIdx) => renderCell(col, item, index, false, cIdx))}
                   {(actionButtonLabel || showActionMenu) &&
                     renderCell(
                       { key: 'action', header: 'Action' } as Column<T>,
                       item,
                       index,
-                      true
+                      true,
+                      columns.length
                     )}
                 </View>
               ))
@@ -476,11 +494,21 @@ const styles = StyleSheet.create({
     fontFamily: THEME.fontFamily.semibold,
     color: THEME.colors.textSecondary,
   },
+  scrollWrapper: {
+    width: '100%',
+  },
+  scrollContentContainer: {
+    width: '100%',
+    minWidth: '100%',
+    flexGrow: 1,
+  },
   table: {
     width: '100%',
-    minWidth: 0,
+    minWidth: '100%',
+    flexGrow: 1,
   },
   tableHeader: {
+    width: '100%',
     flexDirection: 'row',
     backgroundColor: THEME.colors.muted,
     borderBottomWidth: 1,
@@ -501,6 +529,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   row: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'stretch',
     borderBottomWidth: 1,

@@ -146,6 +146,7 @@ export default function DashboardScreen() {
     {
       key: 'amount',
       header: 'Sales',
+      flex: 1,
       width: 110,
       align: 'right',
       render: (item) => (
@@ -155,7 +156,7 @@ export default function DashboardScreen() {
     {
       key: 'status',
       header: 'Status',
-      width: 110,
+      width: 120,
       align: 'center',
       render: (item) => (
         <StatusPill status={item.status === 'Completed' ? 'Approved' : item.status} />
@@ -186,6 +187,7 @@ export default function DashboardScreen() {
     {
       key: 'region',
       header: 'Region',
+      flex: 1,
       width: 110,
       render: (item) => <Text style={styles.cellText}>{item.region}</Text>,
     },
@@ -199,6 +201,7 @@ export default function DashboardScreen() {
     {
       key: 'totalSpending',
       header: 'Spend',
+      flex: 1,
       width: 120,
       align: 'right',
       render: (item) => (

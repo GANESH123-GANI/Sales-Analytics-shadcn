@@ -110,12 +110,14 @@ export default function SalesScreen() {
     {
       key: 'region',
       header: 'Territory',
+      flex: 1,
       width: 120,
       render: (item) => <Text style={st.cellText}>{item.region}</Text>,
     },
     {
       key: 'amount',
       header: 'Amount',
+      flex: 1,
       width: 120,
       align: 'right',
       render: (item) => (
@@ -125,7 +127,7 @@ export default function SalesScreen() {
     {
       key: 'status',
       header: 'Fulfillment',
-      width: 120,
+      width: 130,
       align: 'center',
       render: (item) => (
         <StatusPill status={item.status === 'Completed' ? 'Approved' : item.status} />
