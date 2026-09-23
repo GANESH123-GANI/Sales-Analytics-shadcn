@@ -127,13 +127,13 @@ export default function DashboardScreen() {
     {
       key: 'id',
       header: 'Order ID',
-      width: 130,
+      width: 120,
       render: (item) => <IdBadge label={`ORD-${String(item.id).padStart(3, '0')}`} />,
     },
     {
       key: 'customer',
       header: 'Customer',
-      flex: 1.5,
+      flex: 2,
       render: (item) => (
         <View>
           <Text style={styles.cellBold} numberOfLines={1}>
@@ -146,8 +146,7 @@ export default function DashboardScreen() {
     {
       key: 'amount',
       header: 'Sales',
-      flex: 1,
-      width: 110,
+      flex: 1.2,
       align: 'right',
       render: (item) => (
         <Text style={styles.amountText}>₹{item.amount.toLocaleString('en-IN')}</Text>
@@ -174,7 +173,7 @@ export default function DashboardScreen() {
     {
       key: 'name',
       header: 'Customer',
-      flex: 1.5,
+      flex: 2,
       render: (item) => (
         <View>
           <Text style={styles.cellBold} numberOfLines={1}>
@@ -187,8 +186,7 @@ export default function DashboardScreen() {
     {
       key: 'region',
       header: 'Region',
-      flex: 1,
-      width: 110,
+      flex: 1.2,
       render: (item) => <Text style={styles.cellText}>{item.region}</Text>,
     },
     {
@@ -201,8 +199,7 @@ export default function DashboardScreen() {
     {
       key: 'totalSpending',
       header: 'Spend',
-      flex: 1,
-      width: 120,
+      flex: 1.3,
       align: 'right',
       render: (item) => (
         <Text style={styles.amountText}>₹{item.totalSpending.toLocaleString('en-IN')}</Text>

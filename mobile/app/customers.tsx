@@ -94,7 +94,7 @@ export default function CustomersScreen() {
     {
       key: 'name',
       header: 'Customer Account',
-      flex: 1.5,
+      flex: 2,
       render: (item) => {
         const initials =
           (item.name || 'C')
@@ -134,8 +134,7 @@ export default function CustomersScreen() {
     {
       key: 'region',
       header: 'Territory',
-      flex: 1,
-      width: 130,
+      flex: 1.2,
       render: (item) => <Text style={st.bold}>{item.region}</Text>,
     },
     {
@@ -148,8 +147,7 @@ export default function CustomersScreen() {
     {
       key: 'totalSpending',
       header: 'Lifetime Value (LTV)',
-      flex: 1,
-      width: 150,
+      flex: 1.3,
       align: 'right',
       render: (item) => (
         <Text style={st.amount}>₹{item.totalSpending.toLocaleString('en-IN')}</Text>

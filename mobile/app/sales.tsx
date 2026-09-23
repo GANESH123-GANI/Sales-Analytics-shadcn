@@ -91,13 +91,13 @@ export default function SalesScreen() {
     {
       key: 'id',
       header: 'Order ID',
-      width: 130,
+      width: 120,
       render: (item) => <IdBadge label={`ORD-${String(item.id).padStart(3, '0')}`} />,
     },
     {
       key: 'customer',
       header: 'Customer',
-      flex: 1.4,
+      flex: 2,
       render: (item) => (
         <View>
           <Text style={st.bold} numberOfLines={1}>
@@ -110,15 +110,13 @@ export default function SalesScreen() {
     {
       key: 'region',
       header: 'Territory',
-      flex: 1,
-      width: 120,
+      flex: 1.2,
       render: (item) => <Text style={st.cellText}>{item.region}</Text>,
     },
     {
       key: 'amount',
       header: 'Amount',
-      flex: 1,
-      width: 120,
+      flex: 1.2,
       align: 'right',
       render: (item) => (
         <Text style={st.amount}>₹{item.amount.toLocaleString('en-IN')}</Text>

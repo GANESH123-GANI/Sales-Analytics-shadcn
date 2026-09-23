@@ -87,25 +87,33 @@ export function DataTable<T>({
     },
   ];
 
-  const hasAnyFlex = columns.some((c) => c.flex && !c.width);
-
   const getColLayout = (col: Column<T>, isActionCell = false, colIdx = 0) => {
     if (isActionCell) {
-      return { width: resolvedLayout.actionColumnWidth };
+      return { width: resolvedLayout.actionColumnWidth, flexShrink: 0 };
     }
-    if (col.flex && !col.width) {
-      return { flex: col.flex, minWidth: 80, flexShrink: 1 };
-    }
-    if (col.width && !col.flex) {
-      if (!hasAnyFlex && colIdx === columns.length - 1) {
+    if (isDesktop) {
+      // In Desktop Web:
+      // Fixed badge / status / code columns remain compact
+      if (
+        col.width &&
+        !col.flex &&
+        (col.key === 'id' || col.key === 'status' || col.key === 'unitsSold' || col.key === 'totalOrders')
+      ) {
+        return { width: col.width, flexShrink: 0 };
+      }
+      if (col.flex) {
+        return { flex: col.flex, minWidth: col.width || 90, flexShrink: 1 };
+      }
+      if (col.width) {
         return { flex: 1, minWidth: col.width, flexShrink: 1 };
       }
-      return { width: col.width };
+      return { flex: 1, minWidth: 90, flexShrink: 1 };
     }
-    if (col.width && col.flex) {
-      return { flex: col.flex, minWidth: col.width, flexShrink: 1 };
+    // Mobile / Tablet horizontal scroll table
+    if (col.width) {
+      return { width: col.width, flexShrink: 0 };
     }
-    return { flex: 1, minWidth: 80, flexShrink: 1 };
+    return { width: 140, flexShrink: 0 };
   };
 
   const renderHeaderCell = (col: Column<T>, isActionCell = false, colIdx = 0) => (
@@ -177,6 +185,46 @@ export function DataTable<T>({
   const calculatedColsWidth = columns.reduce((acc, col) => acc + (col.width || (col.flex ? col.flex * 130 : 130)), 0) +
     ((actionButtonLabel || showActionMenu) ? resolvedLayout.actionColumnWidth : 0);
   const effectiveMinWidth = Math.max(resolvedLayout.minTableWidth || 0, calculatedColsWidth, 640);
+
+  const renderTableContent = (tableMinWidth?: number) => (
+    <View style={[styles.table, tableMinWidth ? { minWidth: tableMinWidth } : { width: '100%' }]}>
+      <View style={tableHeaderStyle}>
+        {columns.map((col, cIdx) => renderHeaderCell(col, false, cIdx))}
+        {(actionButtonLabel || showActionMenu) &&
+          renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true, columns.length)}
+      </View>
+
+      {data.length === 0 ? (
+        <View style={styles.emptyRow}>
+          <Text style={styles.emptyText}>No records found</Text>
+        </View>
+      ) : (
+        data.map((item, index) => (
+          <View
+            key={keyExtractor(item, index)}
+            style={[
+              styles.row,
+              index % 2 === 1 && styles.rowAlt,
+              {
+                paddingHorizontal: resolvedLayout.rowPaddingHorizontal,
+                paddingVertical: resolvedLayout.rowPaddingVertical,
+              },
+            ]}
+          >
+            {columns.map((col, cIdx) => renderCell(col, item, index, false, cIdx))}
+            {(actionButtonLabel || showActionMenu) &&
+              renderCell(
+                { key: 'action', header: 'Action' } as Column<T>,
+                item,
+                index,
+                true,
+                columns.length
+              )}
+          </View>
+        ))
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.card}>
@@ -308,56 +356,22 @@ export function DataTable<T>({
             })
           )}
         </View>
+      ) : isDesktop ? (
+        /* ─── Mode 2A: Desktop 100% Full-Width Table View ─── */
+        <View style={styles.desktopTableContainer}>
+          {renderTableContent()}
+        </View>
       ) : (
-        /* ─── Mode 2: Traditional Horizontal Scrolling Table ─── */
+        /* ─── Mode 2B: Mobile/Tablet Horizontal Scrolling Table ─── */
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={!isDesktop}
+          showsHorizontalScrollIndicator={true}
           showsVerticalScrollIndicator={false}
-          alwaysBounceHorizontal={!isDesktop}
+          alwaysBounceHorizontal={true}
           style={styles.scrollWrapper}
-          contentContainerStyle={[
-            styles.scrollContentContainer,
-            { minWidth: isDesktop ? '100%' : effectiveMinWidth },
-          ]}
+          contentContainerStyle={{ minWidth: effectiveMinWidth }}
         >
-          <View style={[styles.table, { minWidth: isDesktop ? '100%' : effectiveMinWidth }]}>
-            <View style={tableHeaderStyle}>
-              {columns.map((col, cIdx) => renderHeaderCell(col, false, cIdx))}
-              {(actionButtonLabel || showActionMenu) &&
-                renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true, columns.length)}
-            </View>
-
-            {data.length === 0 ? (
-              <View style={styles.emptyRow}>
-                <Text style={styles.emptyText}>No records found</Text>
-              </View>
-            ) : (
-              data.map((item, index) => (
-                <View
-                  key={keyExtractor(item, index)}
-                  style={[
-                    styles.row,
-                    index % 2 === 1 && styles.rowAlt,
-                    {
-                      paddingHorizontal: resolvedLayout.rowPaddingHorizontal,
-                      paddingVertical: resolvedLayout.rowPaddingVertical,
-                    },
-                  ]}
-                >
-                  {columns.map((col, cIdx) => renderCell(col, item, index, false, cIdx))}
-                  {(actionButtonLabel || showActionMenu) &&
-                    renderCell(
-                      { key: 'action', header: 'Action' } as Column<T>,
-                      item,
-                      index,
-                      true,
-                      columns.length
-                    )}
-                </View>
-              ))
-            )}
-          </View>
+          {renderTableContent(effectiveMinWidth)}
         </ScrollView>
       )}
     </View>
@@ -494,18 +508,15 @@ const styles = StyleSheet.create({
     fontFamily: THEME.fontFamily.semibold,
     color: THEME.colors.textSecondary,
   },
+  desktopTableContainer: {
+    width: '100%',
+    overflow: 'hidden',
+  },
   scrollWrapper: {
     width: '100%',
   },
-  scrollContentContainer: {
-    width: '100%',
-    minWidth: '100%',
-    flexGrow: 1,
-  },
   table: {
     width: '100%',
-    minWidth: '100%',
-    flexGrow: 1,
   },
   tableHeader: {
     width: '100%',

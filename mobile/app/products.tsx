@@ -86,7 +86,7 @@ export default function ProductsScreen() {
     {
       key: 'name',
       header: 'Product Name',
-      flex: 1.5,
+      flex: 2,
       render: (item) => (
         <View>
           <Text style={st.bold} numberOfLines={1}>
@@ -102,8 +102,7 @@ export default function ProductsScreen() {
     {
       key: 'stock',
       header: 'Inventory',
-      flex: 1,
-      width: 130,
+      flex: 1.2,
       render: (item) => {
         const isLow = (item.stock || 0) < 15;
         return (
@@ -126,8 +125,7 @@ export default function ProductsScreen() {
     {
       key: 'revenue',
       header: 'Gross Revenue',
-      flex: 1,
-      width: 140,
+      flex: 1.3,
       align: 'right',
       render: (item) => (
         <Text style={st.amount}>₹{(item.revenue || 0).toLocaleString('en-IN')}</Text>
