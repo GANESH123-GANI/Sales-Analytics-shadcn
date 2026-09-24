@@ -258,13 +258,19 @@ export default function DashboardScreen() {
     if (subTab === 'Funnel & Velocity') {
       return (
         <View style={styles.tabPanel}>
-          <View style={[styles.splitGrid, isDesktop ? styles.splitGridDesktop : styles.splitGridMobile]}>
-            <View style={styles.leftCol}>
+          <View style={[styles.gridRow, isDesktop ? styles.gridRowDesktop : styles.gridRowMobile]}>
+            <View style={styles.gridCol}>
               <ConversionFunnelChart completedOrdersCount={summary?.totalOrders || 46} />
+            </View>
+            <View style={styles.gridCol}>
+              <RevenueForecastCard currentRevenue={summary?.totalRevenue || 898634} />
+            </View>
+          </View>
+          <View style={[styles.gridRow, isDesktop ? styles.gridRowDesktop : styles.gridRowMobile]}>
+            <View style={styles.gridCol}>
               <SalesHeatmapChart />
             </View>
-            <View style={styles.rightCol}>
-              <RevenueForecastCard currentRevenue={summary?.totalRevenue || 898634} />
+            <View style={styles.gridCol}>
               <CostProgressBar
                 title="Sales by category"
                 total={summary?.totalRevenue}
@@ -321,29 +327,49 @@ export default function DashboardScreen() {
           <RevenueChart data={monthlyRevenue} />
         </View>
 
-        {/* ─── Secondary Analytics Grid ─── */}
-        <View style={[styles.splitGrid, isDesktop ? styles.splitGridDesktop : styles.splitGridMobile]}>
-          {/* Left Column: Top Drivers & Funnel */}
-          <View style={styles.leftCol}>
-            <TopProductsChart products={products} />
-            <ConversionFunnelChart completedOrdersCount={summary?.totalOrders || 46} />
-            <DataTable
-              title="Recent transactions"
-              count={recentSales.length}
-              columns={salesColumns}
-              data={recentSales}
-              keyExtractor={(item) => String(item.id)}
-              actionButtonLabel="Review"
-              onRowAction={() => router.push('/sales')}
-            />
+        {/* ─── Secondary Analytics Grid (Uniform Parallel Rows) ─── */}
+        <View style={styles.gridContainer}>
+          {/* Row 1: Top Products & Target Forecast */}
+          <View style={[styles.gridRow, isDesktop ? styles.gridRowDesktop : styles.gridRowMobile]}>
+            <View style={styles.gridCol}>
+              <TopProductsChart products={products} />
+            </View>
+            <View style={styles.gridCol}>
+              <RevenueForecastCard currentRevenue={summary?.totalRevenue || 898634} />
+            </View>
           </View>
 
-          {/* Right Column: Forecast, Heatmap & Demographics */}
-          <View style={styles.rightCol}>
-            <RevenueForecastCard currentRevenue={summary?.totalRevenue || 898634} />
+          {/* Row 2: Conversion Funnel & Order Status (Parallel Seam) */}
+          <View style={[styles.gridRow, isDesktop ? styles.gridRowDesktop : styles.gridRowMobile]}>
+            <View style={styles.gridCol}>
+              <ConversionFunnelChart completedOrdersCount={summary?.totalOrders || 46} />
+            </View>
+            <View style={styles.gridCol}>
+              <OrderStatusChart data={orderStatus} />
+            </View>
+          </View>
+
+          {/* Row 3: Recent Transactions & Geographic Revenue (Parallel Bottom) */}
+          <View style={[styles.gridRow, isDesktop ? styles.gridRowDesktop : styles.gridRowMobile]}>
+            <View style={styles.gridCol}>
+              <DataTable
+                title="Recent transactions"
+                count={recentSales.length}
+                columns={salesColumns}
+                data={recentSales}
+                keyExtractor={(item) => String(item.id)}
+                actionButtonLabel="Review"
+                onRowAction={() => router.push('/sales')}
+              />
+            </View>
+            <View style={styles.gridCol}>
+              <RegionChart data={regionSales} />
+            </View>
+          </View>
+
+          {/* Full Width: Trading Velocity Heatmap */}
+          <View style={styles.fullWidthCardSection}>
             <SalesHeatmapChart />
-            <OrderStatusChart data={orderStatus} />
-            <RegionChart data={regionSales} />
           </View>
         </View>
       </>
@@ -500,19 +526,30 @@ const styles = StyleSheet.create({
   heroChartSection: {
     marginBottom: 12,
   },
-  splitGrid: {
-    gap: 12,
+  gridContainer: {
+    gap: 14,
     marginBottom: 14,
   },
-  splitGridDesktop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  gridRow: {
+    gap: 14,
   },
-  splitGridMobile: {
+  gridRowDesktop: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  gridRowMobile: {
     flexDirection: 'column',
   },
-  leftCol: { flex: 1.25, gap: 12 },
-  rightCol: { flex: 1, gap: 12 },
+  gridCol: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  fullWidthCardSection: {
+    width: '100%',
+  },
 
   // Cell styles — centralized here to keep pages DRY
   cellBold: {

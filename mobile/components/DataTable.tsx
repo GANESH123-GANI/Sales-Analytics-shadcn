@@ -417,6 +417,8 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.border,
     overflow: 'hidden',
     width: '100%',
+    flex: 1,
+    height: '100%',
     ...THEME.shadow.card,
   },
   headerBar: {

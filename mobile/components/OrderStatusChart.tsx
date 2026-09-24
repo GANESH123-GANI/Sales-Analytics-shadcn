@@ -281,6 +281,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.colors.border,
     overflow: 'hidden',
+    flex: 1,
+    height: '100%',
     ...THEME.shadow.card,
   },
   header: {

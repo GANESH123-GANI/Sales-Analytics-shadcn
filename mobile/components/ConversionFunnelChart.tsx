@@ -29,10 +29,12 @@ const DEFAULT_STAGES: FunnelStage[] = [
 
 interface ConversionFunnelChartProps {
   completedOrdersCount?: number;
+  style?: any;
 }
 
 export const ConversionFunnelChart: React.FC<ConversionFunnelChartProps> = ({
   completedOrdersCount = 46,
+  style,
 }) => {
   const [selectedStageIdx, setSelectedStageIdx] = useState<number>(0);
 
@@ -47,7 +49,7 @@ export const ConversionFunnelChart: React.FC<ConversionFunnelChartProps> = ({
   const overallConversion = ((completedOrdersCount / topStageCount) * 100).toFixed(2);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -117,8 +119,8 @@ export const ConversionFunnelChart: React.FC<ConversionFunnelChartProps> = ({
                           idx === stages.length - 1
                             ? '#0f172a'
                             : isSelected
-                            ? '#1e293b'
-                            : '#64748b',
+                              ? '#1e293b'
+                              : '#64748b',
                       },
                     ]}
                   />
@@ -165,6 +167,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     overflow: 'hidden',
+    flex: 1,
+    height: '100%',
     ...THEME.shadow.card,
   },
   header: {
