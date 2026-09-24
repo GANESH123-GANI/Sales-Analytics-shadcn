@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { THEME } from '../constants/theme';
-import { MoreHorizontal, MoveHorizontal, LayoutGrid, Table as TableIcon } from 'lucide-react-native';
+import { MoveHorizontal, LayoutGrid, Table as TableIcon } from 'lucide-react-native';
 
 export interface Column<T> {
   key: string;
@@ -47,11 +47,14 @@ export function DataTable<T>({
   keyExtractor,
   onRowAction,
   actionButtonLabel,
-  showActionMenu = true,
+  showActionMenu = false,
   layout,
 }: DataTableProps<T>) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
+
+  const hasActionColumn = Boolean(actionButtonLabel || onRowAction);
+  const resolvedActionLabel = actionButtonLabel || (onRowAction ? 'View' : '');
 
   const resolvedLayout: Required<DataTableLayoutConfig> = {
     compact: false,
@@ -64,7 +67,7 @@ export function DataTable<T>({
     rowGap: 10,
     cellPaddingHorizontal: 8,
     cellPaddingVertical: isDesktop ? 8 : 5,
-    actionColumnWidth: 120,
+    actionColumnWidth: 96,
     borderColor: THEME.colors.border,
     ...layout,
   };
@@ -76,7 +79,7 @@ export function DataTable<T>({
     resolvedLayout.rowPaddingVertical = 7;
     resolvedLayout.cellPaddingHorizontal = 6;
     resolvedLayout.cellPaddingVertical = 7;
-    resolvedLayout.actionColumnWidth = 100;
+    resolvedLayout.actionColumnWidth = 84;
   }
 
   const tableHeaderStyle = [
@@ -154,18 +157,13 @@ export function DataTable<T>({
     >
       {isActionCell ? (
         <View style={styles.actionCellInner}>
-          {actionButtonLabel && (
+          {hasActionColumn && (
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => onRowAction && onRowAction(item)}
               activeOpacity={0.8}
             >
-              <Text style={styles.actionBtnText}>{actionButtonLabel}</Text>
-            </TouchableOpacity>
-          )}
-          {showActionMenu && (
-            <TouchableOpacity style={styles.menuBtn} activeOpacity={0.6}>
-              <MoreHorizontal size={15} color={THEME.colors.textMuted} />
+              <Text style={styles.actionBtnText}>{resolvedActionLabel || 'View'}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -183,14 +181,14 @@ export function DataTable<T>({
 
   // Calculate a healthy minimum width so columns are never squashed on mobile screens
   const calculatedColsWidth = columns.reduce((acc, col) => acc + (col.width || (col.flex ? col.flex * 130 : 130)), 0) +
-    ((actionButtonLabel || showActionMenu) ? resolvedLayout.actionColumnWidth : 0);
+    (hasActionColumn ? resolvedLayout.actionColumnWidth : 0);
   const effectiveMinWidth = Math.max(resolvedLayout.minTableWidth || 0, calculatedColsWidth, 640);
 
   const renderTableContent = (tableMinWidth?: number) => (
     <View style={[styles.table, tableMinWidth ? { minWidth: tableMinWidth } : { width: '100%' }]}>
       <View style={tableHeaderStyle}>
         {columns.map((col, cIdx) => renderHeaderCell(col, false, cIdx))}
-        {(actionButtonLabel || showActionMenu) &&
+        {hasActionColumn &&
           renderHeaderCell({ key: 'action', header: 'Action' } as Column<T>, true, columns.length)}
       </View>
 
@@ -212,7 +210,7 @@ export function DataTable<T>({
             ]}
           >
             {columns.map((col, cIdx) => renderCell(col, item, index, false, cIdx))}
-            {(actionButtonLabel || showActionMenu) &&
+            {hasActionColumn &&
               renderCell(
                 { key: 'action', header: 'Action' } as Column<T>,
                 item,
@@ -566,7 +564,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 4,
   },
   actionBtn: {
     backgroundColor: THEME.colors.buttonDark,
@@ -579,10 +576,6 @@ const styles = StyleSheet.create({
     fontSize: THEME.fontSize.sm,
     fontWeight: '600',
     fontFamily: THEME.fontFamily.semibold,
-  },
-  menuBtn: {
-    padding: 4,
-    borderRadius: THEME.radius.sm,
   },
   emptyRow: {
     padding: 32,
