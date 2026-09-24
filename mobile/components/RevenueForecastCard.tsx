@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Target, TrendingUp, CheckCircle, AlertCircle, Sparkles } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Target, TrendingUp, CheckCircle, AlertCircle, Sparkles, RefreshCw, ChevronRight } from 'lucide-react-native';
 import { THEME } from '../constants/theme';
 
 interface RevenueForecastCardProps {
@@ -9,17 +9,126 @@ interface RevenueForecastCardProps {
   projectedRevenue?: number;
 }
 
-export const RevenueForecastCard: React.FC<RevenueForecastCardProps> = ({
-  currentRevenue = 898634,
-  annualTarget = 1200000,
-  projectedRevenue = 1140000,
-}) => {
-  const achievedPercent = Math.min(Math.round((currentRevenue / annualTarget) * 100), 100);
-  const projectedPercent = Math.min(Math.round((projectedRevenue / annualTarget) * 100), 100);
-  const pacingRate = ((projectedRevenue / annualTarget) * 100).toFixed(1);
-  const isOnTrack = parseFloat(pacingRate) >= 90;
+interface QuarterConfig {
+  name: string;
+  badge: string;
+  actual: number;
+  target: number;
+  projected: number;
+  dailyReq: string;
+  runRate: string;
+  status: string;
+  pacing: string;
+  statusColor: string;
+  progressPercent: number;
+  pipelineHealth: string;
+  runway: string;
+  confidence: string;
+  highlight: string;
+}
 
-  const remainingToTarget = Math.max(annualTarget - currentRevenue, 0);
+const QUARTER_DATA: Record<string, QuarterConfig> = {
+  ALL: {
+    name: 'Full Fiscal Year 2026',
+    badge: '104% Pacing',
+    actual: 1248500,
+    target: 1200000,
+    projected: 1380000,
+    dailyReq: '₹3,348 / day',
+    runRate: '₹3,489 / day',
+    status: 'Ahead of Pace (+4.2%)',
+    pacing: '104.0',
+    statusColor: '#2563eb',
+    progressPercent: 104,
+    pipelineHealth: '94.8% • Strong',
+    runway: '+14.2% MoM',
+    confidence: 'High (AI Pacing)',
+    highlight: 'Annual run-rate benchmark on target with strong digital sales growth.',
+  },
+  Q1: {
+    name: 'Quarter 1 (Jan – Mar)',
+    badge: '104% Met',
+    actual: 295400,
+    target: 285000,
+    projected: 295400,
+    dailyReq: '₹3,166 / day',
+    runRate: '₹3,282 / day',
+    status: 'Target Exceeded (+3.6%)',
+    pacing: '103.6',
+    statusColor: '#047857',
+    progressPercent: 100,
+    pipelineHealth: '92.1% • Settled',
+    runway: '+9.8% QoQ',
+    confidence: 'Historical Audited',
+    highlight: 'Post-holiday restocking surge drove strong early enterprise bookings.',
+  },
+  Q2: {
+    name: 'Quarter 2 (Apr – Jun)',
+    badge: '112% Met',
+    actual: 342100,
+    target: 305000,
+    projected: 342100,
+    dailyReq: '₹3,351 / day',
+    runRate: '₹3,759 / day',
+    status: 'Target Exceeded (+12.2%)',
+    pacing: '112.2',
+    statusColor: '#047857',
+    progressPercent: 100,
+    pipelineHealth: '95.4% • Settled',
+    runway: '+15.8% QoQ',
+    confidence: 'Historical Audited',
+    highlight: 'Summer promotional velocity and wholesale distributor expansion.',
+  },
+  Q3: {
+    name: 'Quarter 3 (Jul – Sep)',
+    badge: '128% Active',
+    actual: 389200,
+    target: 305000,
+    projected: 412000,
+    dailyReq: '₹3,351 / day',
+    runRate: '₹4,276 / day',
+    status: 'Surging Ahead (+27.6%)',
+    pacing: '127.6',
+    statusColor: '#047857',
+    progressPercent: 92,
+    pipelineHealth: '96.8% • Peak Run',
+    runway: '+13.7% QoQ',
+    confidence: 'Real-Time Telemetry',
+    highlight: 'Festive pre-orders and premium electronics catalog bundles outperforming.',
+  },
+  Q4: {
+    name: 'Quarter 4 (Oct – Dec)',
+    badge: '108% Est',
+    actual: 221800,
+    target: 305000,
+    projected: 330500,
+    dailyReq: '₹3,315 / day',
+    runRate: '₹3,592 / day',
+    status: 'On Track (+8.3%)',
+    pacing: '108.4',
+    statusColor: '#2563eb',
+    progressPercent: 73,
+    pipelineHealth: '91.5% • Projected',
+    runway: '+11.4% Est',
+    confidence: 'ML Forecast',
+    highlight: 'Year-end corporate contract renewals and institutional holiday gifting pipeline.',
+  },
+};
+
+export const RevenueForecastCard: React.FC<RevenueForecastCardProps> = ({
+  currentRevenue: defaultCurrent = 1248500,
+  annualTarget: defaultTarget = 1200000,
+  projectedRevenue: defaultProj = 1380000,
+}) => {
+  const [selectedQuarter, setSelectedQuarter] = useState<'ALL' | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('Q3');
+
+  const currentData = QUARTER_DATA[selectedQuarter];
+  const activeRev = currentData.actual;
+  const activeTarget = currentData.target;
+  const activeProj = currentData.projected;
+
+  const achievedPercent = Math.min(Math.round((activeRev / activeTarget) * 100), 100);
+  const remainingToTarget = Math.max(activeTarget - activeRev, 0);
 
   return (
     <View style={styles.card}>
@@ -31,73 +140,73 @@ export const RevenueForecastCard: React.FC<RevenueForecastCardProps> = ({
               <Target size={15} color="#0f172a" strokeWidth={2.4} />
             </View>
             <Text style={styles.title}>Target & Run-Rate Forecast</Text>
-            <View
-              style={[
-                styles.pacingBadge,
-                isOnTrack ? styles.pacingBadgeOn : styles.pacingBadgeOff,
-              ]}
+            <TouchableOpacity
+              style={[styles.pacingBadge, styles.pacingBadgeOn]}
+              onPress={() => setSelectedQuarter(selectedQuarter === 'ALL' ? 'Q3' : 'ALL')}
+              activeOpacity={0.7}
             >
-              <Sparkles size={11} color={isOnTrack ? '#047857' : '#b45309'} />
-              <Text
-                style={[
-                  styles.pacingText,
-                  isOnTrack ? styles.pacingTextOn : styles.pacingTextOff,
-                ]}
-              >
-                {pacingRate}% Pacing
+              <Sparkles size={11} color="#047857" />
+              <Text style={styles.pacingText}>
+                {currentData.pacing}% Pacing
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>Annual benchmark pacing & year-end projection</Text>
+          <Text style={styles.subtitle}>
+            {selectedQuarter === 'ALL' ? 'Annual benchmark pacing & year-end projection' : `${currentData.name} — Interactive Breakdown`}
+          </Text>
         </View>
 
-        <View style={styles.targetBadge}>
-          <Text style={styles.targetLabel}>Annual Target</Text>
-          <Text style={styles.targetValue}>₹{(annualTarget / 100000).toFixed(1)}L</Text>
-        </View>
+        <TouchableOpacity
+          style={[styles.targetBadge, selectedQuarter === 'ALL' && styles.targetBadgeActive]}
+          onPress={() => setSelectedQuarter('ALL')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.targetLabel}>{selectedQuarter === 'ALL' ? 'Full Year Target' : 'Reset to Full Year'}</Text>
+          <Text style={styles.targetValue}>₹{(activeTarget / 100000).toFixed(1)}L</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Body */}
       <View style={styles.body}>
-        {/* Metric Comparison Values */}
+        {/* Metric Comparison Values (Interactive dynamically bound to selected quarter) */}
         <View style={styles.statsRow}>
           <View style={styles.statCol}>
-            <Text style={styles.colLabel}>Current Revenue</Text>
-            <Text style={styles.colValue}>₹{currentRevenue.toLocaleString('en-IN')}</Text>
-            <Text style={styles.colSub}>{achievedPercent}% of target</Text>
+            <Text style={styles.colLabel}>{selectedQuarter === 'ALL' ? 'Current FY26 Revenue' : `${selectedQuarter} Revenue`}</Text>
+            <Text style={styles.colValue}>₹{activeRev.toLocaleString('en-IN')}</Text>
+            <Text style={styles.colSub}>{achievedPercent}% of {selectedQuarter === 'ALL' ? 'FY' : selectedQuarter} target</Text>
           </View>
 
           <View style={styles.statColDivider} />
 
           <View style={styles.statCol}>
-            <Text style={styles.colLabel}>Projected EOY</Text>
-            <Text style={styles.colValueProj}>₹{projectedRevenue.toLocaleString('en-IN')}</Text>
-            <Text style={styles.colSub}>Expected outcome</Text>
+            <Text style={styles.colLabel}>{selectedQuarter === 'ALL' ? 'Projected EOY' : `${selectedQuarter} Forecast`}</Text>
+            <Text style={styles.colValueProj}>₹{activeProj.toLocaleString('en-IN')}</Text>
+            <Text style={styles.colSub}>Pacing outcome</Text>
           </View>
 
           <View style={styles.statColDivider} />
 
           <View style={styles.statCol}>
-            <Text style={styles.colLabel}>Gap to Target</Text>
+            <Text style={styles.colLabel}>Target Gap</Text>
             <Text style={styles.colValueGap}>₹{remainingToTarget.toLocaleString('en-IN')}</Text>
-            <Text style={styles.colSub}>Remaining to close</Text>
+            <Text style={styles.colSub}>{remainingToTarget === 0 ? 'Target achieved! 🎉' : 'Remaining to close'}</Text>
           </View>
         </View>
 
         {/* Visual Benchmark Gauge / Progress */}
         <View style={styles.gaugeContainer}>
           <View style={styles.track}>
-            {/* Projected Fill (Lighter Slate) */}
-            <View style={[styles.projectedFill, { width: `${projectedPercent}%` }]} />
-            {/* Actual Current Fill (Solid Deep Slate) */}
-            <View style={[styles.currentFill, { width: `${achievedPercent}%` }]} />
+            {/* Projected Fill */}
+            <View style={[styles.projectedFill, { width: `${Math.min(currentData.projectedPercent, 100)}%` }]} />
+            {/* Actual Current Fill */}
+            <View style={[styles.currentFill, { width: `${Math.min(achievedPercent, 100)}%` }]} />
           </View>
 
           {/* Benchmark Markers */}
           <View style={styles.markersRow}>
             <Text style={styles.markerText}>₹0</Text>
-            <Text style={styles.markerText}>₹6.0L (50%)</Text>
-            <Text style={styles.markerTextTarget}>Target: ₹12.0L (100%)</Text>
+            <Text style={styles.markerText}>₹{(activeTarget * 0.5 / 100000).toFixed(1)}L (50%)</Text>
+            <Text style={styles.markerTextTarget}>Target: ₹{(activeTarget / 100000).toFixed(1)}L (100%)</Text>
           </View>
         </View>
 
@@ -106,96 +215,93 @@ export const RevenueForecastCard: React.FC<RevenueForecastCardProps> = ({
           <View style={styles.insightsRow}>
             <View style={styles.insightItem}>
               <Text style={styles.insightLabel}>Daily Pacing Req:</Text>
-              <Text style={styles.insightVal}>₹3,348 / day</Text>
+              <Text style={styles.insightVal}>{currentData.dailyReq}</Text>
             </View>
             <View style={styles.insightItem}>
               <Text style={styles.insightLabel}>Current Run-Rate:</Text>
-              <Text style={styles.insightValGreen}>₹3,489 / day</Text>
+              <Text style={styles.insightValGreen}>{currentData.runRate}</Text>
             </View>
             <View style={styles.insightItem}>
               <Text style={styles.insightLabel}>Status:</Text>
-              <Text style={styles.insightValStatus}>Ahead of Pace (+4.2%)</Text>
+              <Text style={[styles.insightValStatus, { color: currentData.statusColor }]}>{currentData.status}</Text>
             </View>
           </View>
         </View>
 
-        {/* Quarterly Milestone Breakdown */}
+        {/* Quarterly Milestone Breakdown (Clickable interactive cards) */}
         <View style={styles.quarterlySection}>
-          <Text style={styles.sectionHeaderTitle}>Quarterly Revenue Milestones</Text>
-          <View style={styles.quarterlyGrid}>
-            <View style={styles.quarterCard}>
-              <View style={styles.quarterTop}>
-                <Text style={styles.quarterName}>Q1</Text>
-                <View style={styles.quarterBadgeMetBox}>
-                  <Text style={styles.quarterBadgeMet}>104%</Text>
-                </View>
-              </View>
-              <Text style={styles.quarterAmount}>₹2.95L</Text>
-              <Text style={styles.quarterTarget}>Target: ₹2.85L</Text>
-              <View style={styles.miniProgressTrack}>
-                <View style={[styles.miniProgressFill, { width: '100%' }]} />
-              </View>
-            </View>
-
-            <View style={styles.quarterCard}>
-              <View style={styles.quarterTop}>
-                <Text style={styles.quarterName}>Q2</Text>
-                <View style={styles.quarterBadgeMetBox}>
-                  <Text style={styles.quarterBadgeMet}>112%</Text>
-                </View>
-              </View>
-              <Text style={styles.quarterAmount}>₹3.42L</Text>
-              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
-              <View style={styles.miniProgressTrack}>
-                <View style={[styles.miniProgressFill, { width: '100%' }]} />
-              </View>
-            </View>
-
-            <View style={[styles.quarterCard, styles.quarterCardActive]}>
-              <View style={styles.quarterTop}>
-                <Text style={[styles.quarterName, styles.quarterNameActive]}>Q3 (Active)</Text>
-                <View style={styles.quarterBadgePacingBox}>
-                  <Text style={styles.quarterBadgePacing}>128%</Text>
-                </View>
-              </View>
-              <Text style={styles.quarterAmount}>₹3.89L</Text>
-              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
-              <View style={styles.miniProgressTrack}>
-                <View style={[styles.miniProgressFill, { width: '92%', backgroundColor: '#0f172a' }]} />
-              </View>
-            </View>
-
-            <View style={styles.quarterCard}>
-              <View style={styles.quarterTop}>
-                <Text style={styles.quarterName}>Q4 (Est)</Text>
-                <View style={styles.quarterBadgeProjBox}>
-                  <Text style={styles.quarterBadgeProj}>108%</Text>
-                </View>
-              </View>
-              <Text style={styles.quarterAmount}>₹3.30L</Text>
-              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
-              <View style={styles.miniProgressTrack}>
-                <View style={[styles.miniProgressFill, { width: '75%', backgroundColor: '#94a3b8' }]} />
-              </View>
-            </View>
+          <View style={styles.quarterlyHeaderRow}>
+            <Text style={styles.sectionHeaderTitle}>Quarterly Revenue Milestones</Text>
+            <Text style={styles.clickHintText}>Tap any quarter to inspect</Text>
           </View>
+
+          <View style={styles.quarterlyGrid}>
+            {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((qKey) => {
+              const q = QUARTER_DATA[qKey];
+              const isSelected = selectedQuarter === qKey;
+
+              return (
+                <TouchableOpacity
+                  key={qKey}
+                  style={[styles.quarterCard, isSelected && styles.quarterCardActive]}
+                  onPress={() => setSelectedQuarter(qKey)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.quarterTop}>
+                    <Text style={[styles.quarterName, isSelected && styles.quarterNameActive]}>
+                      {qKey} {qKey === 'Q3' ? '• Now' : ''}
+                    </Text>
+                    <View style={isSelected ? styles.quarterBadgePacingBox : styles.quarterBadgeMetBox}>
+                      <Text style={isSelected ? styles.quarterBadgePacing : styles.quarterBadgeMet}>
+                        {q.badge}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.quarterAmount}>₹{(q.actual / 100000).toFixed(2)}L</Text>
+                  <Text style={styles.quarterTarget}>Goal: ₹{(q.target / 100000).toFixed(2)}L</Text>
+
+                  <View style={styles.miniProgressTrack}>
+                    <View
+                      style={[
+                        styles.miniProgressFill,
+                        {
+                          width: `${Math.min(q.progressPercent, 100)}%`,
+                          backgroundColor: isSelected ? '#0f172a' : '#10b981',
+                        },
+                      ]}
+                    />
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Selected Quarter Driver Telemetry */}
+        <View style={styles.driverBar}>
+          <Sparkles size={13} color="#2563eb" />
+          <Text style={styles.driverText}>
+            <Text style={styles.driverBold}>{currentData.name}: </Text>
+            {currentData.highlight}
+          </Text>
         </View>
 
         {/* Forecast Health & Runway Metrics Footer */}
         <View style={styles.healthFooter}>
           <View style={styles.healthCol}>
             <Text style={styles.healthLabel}>Pipeline Health</Text>
-            <Text style={styles.healthValueGreen}>94.8% • Strong</Text>
+            <Text style={styles.healthValueGreen}>{currentData.pipelineHealth}</Text>
           </View>
           <View style={styles.healthColDivider} />
           <View style={styles.healthCol}>
             <Text style={styles.healthLabel}>Runway Velocity</Text>
-            <Text style={styles.healthValue}>+14.2% MoM</Text>
+            <Text style={styles.healthValue}>{currentData.runway}</Text>
           </View>
           <View style={styles.healthColDivider} />
           <View style={styles.healthCol}>
-            <Text style={styles.healthLabel}>Forecast Confidence</Text>
-            <Text style={styles.healthValue}>High (AI Pacing)</Text>
+            <Text style={styles.healthLabel}>Telemetry Mode</Text>
+            <Text style={styles.healthValue}>{currentData.confidence}</Text>
           </View>
         </View>
       </View>
@@ -553,5 +659,41 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#047857',
     marginTop: 1,
+  },
+  targetBadgeActive: {
+    borderColor: '#0f172a',
+    backgroundColor: '#0f172a',
+  },
+  quarterlyHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clickHintText: {
+    fontSize: 10.5,
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  driverBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  driverText: {
+    flex: 1,
+    fontSize: 11.5,
+    color: '#1e3a8a',
+    lineHeight: 16,
+  },
+  driverBold: {
+    fontWeight: '700',
+    color: '#1e40af',
   },
 });

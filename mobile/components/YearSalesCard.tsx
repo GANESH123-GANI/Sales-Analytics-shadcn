@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   LayoutChangeEvent,
+  Platform,
 } from 'react-native';
 import Svg, { Rect, Line, Text as SvgText, G } from 'react-native-svg';
 import {
@@ -343,7 +344,14 @@ export const YearSalesCard: React.FC<YearSalesCardProps> = ({
               return (
                 <G
                   key={`bar-${item.label}-${idx}`}
-                  onPress={() => setActiveIdx(activeIdx === idx ? null : idx)}
+                  {...((Platform.OS === 'web'
+                    ? {
+                        onClick: () => setActiveIdx(activeIdx === idx ? null : idx),
+                        style: { cursor: 'pointer' },
+                      }
+                    : {
+                        onPress: () => setActiveIdx(activeIdx === idx ? null : idx),
+                      }) as any)}
                 >
                   <Rect
                     x={padLeft + idx * slotW}
