@@ -12,19 +12,37 @@ const dbUrl =
   process.env.POSTGRES_URL ||
   process.env.MYSQL_URL;
 
-const isPostgres = dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'));
+const isPostgres =
+  (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) ||
+  String(process.env.DB_PORT) === '5432' ||
+  (process.env.DB_HOST && (process.env.DB_HOST.includes('neon.tech') || process.env.DB_HOST.includes('postgres'))) ||
+  process.env.DB_TYPE === 'postgres' ||
+  process.env.DB_ENGINE === 'postgres';
 
 let pool;
 
 if (isPostgres) {
   const { Pool } = require('pg');
 
-  const pgPool = new Pool({
-    connectionString: dbUrl,
-    ssl: { rejectUnauthorized: false },
-    max: 10,
-    idleTimeoutMillis: 30000,
-  });
+  const poolOptions = dbUrl
+    ? {
+        connectionString: dbUrl,
+        ssl: { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+      }
+    : {
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+      };
+
+  const pgPool = new Pool(poolOptions);
 
   /**
    * Helper that translates MySQL syntax to PostgreSQL syntax:
