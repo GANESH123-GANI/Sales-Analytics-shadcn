@@ -13,8 +13,6 @@ import {
   Coins,
   Clock,
   AlertTriangle,
-  Calendar,
-  Download,
   Share2,
   TrendingUp,
   Sparkles,
@@ -65,7 +63,6 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [subTab, setSubTab] = useState<string>('Total sales');
-  const [timeFilter, setTimeFilter] = useState<'ytd' | 'q3' | 'all'>('ytd');
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenue[]>([]);
   const [categorySales, setCategorySales] = useState<CategorySales[]>([]);
@@ -388,42 +385,6 @@ export default function DashboardScreen() {
         tintColor={THEME.colors.primary}
       />
 
-      {/* ─── Executive Date & Action Toolbar (shadcn style) ─── */}
-      <View style={styles.dashboardToolbar}>
-        <View style={styles.toolbarDateBlock}>
-          <Calendar size={14} color="#64748b" />
-          <Text style={styles.toolbarDateText}>Jan 1, 2026 – Sep 22, 2026</Text>
-        </View>
-
-        <View style={styles.toolbarActions}>
-          {/* Time range pills */}
-          <View style={styles.timePillGroup}>
-            {(['ytd', 'q3', 'all'] as const).map((t) => (
-              <TouchableOpacity
-                key={t}
-                style={[styles.timePill, timeFilter === t && styles.timePillActive]}
-                onPress={() => setTimeFilter(t)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.timePillText, timeFilter === t && styles.timePillTextActive]}>
-                  {t === 'ytd' ? 'Year to Date' : t === 'q3' ? 'Q3 2026' : 'All Time'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Export Report Button */}
-          <TouchableOpacity
-            style={styles.exportBtn}
-            onPress={() => router.push('/reports')}
-            activeOpacity={0.7}
-          >
-            <Download size={13} color="#0f172a" />
-            <Text style={styles.exportBtnText}>Reports</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* ─── Segmented Navigation Tabs ─── */}
       <SegmentedTabs
         tabs={['Total sales', 'Funnel & Velocity', 'Orders', 'Customers']}
@@ -444,79 +405,6 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  dashboardToolbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  toolbarDateBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  toolbarDateText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#475569',
-    fontFamily: THEME.fontFamily.medium,
-  },
-  toolbarActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  timePillGroup: {
-    flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 6,
-    padding: 2,
-    gap: 2,
-  },
-  timePill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  timePillActive: {
-    backgroundColor: '#ffffff',
-    elevation: 1,
-    ...(Platform.OS === 'web' ? { boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } : {}),
-  },
-  timePillText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#64748b',
-  },
-  timePillTextActive: {
-    color: '#0f172a',
-    fontWeight: '700',
-  },
-  exportBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-  },
-  exportBtnText: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-
   statCardsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
