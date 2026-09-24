@@ -494,15 +494,15 @@ const styles = StyleSheet.create({
   statCardsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
   },
   heroChartSection: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   splitGrid: {
-    gap: 16,
-    marginBottom: 20,
+    gap: 12,
+    marginBottom: 14,
   },
   splitGridDesktop: {
     flexDirection: 'row',
@@ -511,8 +511,8 @@ const styles = StyleSheet.create({
   splitGridMobile: {
     flexDirection: 'column',
   },
-  leftCol: { flex: 1.25, gap: 16 },
-  rightCol: { flex: 1, gap: 16 },
+  leftCol: { flex: 1.25, gap: 12 },
+  rightCol: { flex: 1, gap: 12 },
 
   // Cell styles — centralized here to keep pages DRY
   cellBold: {

@@ -273,18 +273,18 @@ const st = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
   },
   healthCard: {
     backgroundColor: '#ffffff',
     borderRadius: THEME.radius.lg,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 14,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
     ...THEME.shadow.card,
-    gap: 10,
+    gap: 8,
   },
   healthHeader: {
     flexDirection: 'row',

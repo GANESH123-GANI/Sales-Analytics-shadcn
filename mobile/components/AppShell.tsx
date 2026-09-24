@@ -719,19 +719,17 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 32,
+    paddingTop: 16,
+    paddingBottom: 24,
     width: '100%',
-    minHeight: '100%',
-    flexGrow: 1,
   },
   pageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 14,
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   pageHeaderLeft: {
     flex: 1,

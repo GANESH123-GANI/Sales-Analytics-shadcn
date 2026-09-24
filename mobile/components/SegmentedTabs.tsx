@@ -60,7 +60,11 @@ export const SegmentedTabs: React.FC<SegmentedTabsProps> = ({
 
 const styles = StyleSheet.create({
   scrollWrapper: {
-    marginBottom: 12,
+    marginBottom: 10,
+    flexGrow: 0,
+    flexShrink: 0,
+    height: 38,
+    maxHeight: 38,
   },
   scrollContainer: {
     flexDirection: 'row',
@@ -71,6 +75,7 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.border,
     alignSelf: 'flex-start',
     gap: 2,
+    alignItems: 'center',
   },
   container: {
     flexDirection: 'row',
@@ -80,8 +85,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderWidth: 1,
     borderColor: THEME.colors.border,
-    marginBottom: 12,
+    marginBottom: 10,
     gap: 2,
+    flexGrow: 0,
+    flexShrink: 0,
+    alignItems: 'center',
   },
   tab: {
     paddingHorizontal: 14,

@@ -591,11 +591,11 @@ const st = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
   },
   tabPanel: {
-    gap: 16,
+    gap: 12,
   },
 
   /* P&L Waterfall Statement */
