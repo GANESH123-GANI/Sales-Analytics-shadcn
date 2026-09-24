@@ -118,6 +118,86 @@ export const RevenueForecastCard: React.FC<RevenueForecastCardProps> = ({
             </View>
           </View>
         </View>
+
+        {/* Quarterly Milestone Breakdown */}
+        <View style={styles.quarterlySection}>
+          <Text style={styles.sectionHeaderTitle}>Quarterly Revenue Milestones</Text>
+          <View style={styles.quarterlyGrid}>
+            <View style={styles.quarterCard}>
+              <View style={styles.quarterTop}>
+                <Text style={styles.quarterName}>Q1</Text>
+                <View style={styles.quarterBadgeMetBox}>
+                  <Text style={styles.quarterBadgeMet}>104%</Text>
+                </View>
+              </View>
+              <Text style={styles.quarterAmount}>₹2.95L</Text>
+              <Text style={styles.quarterTarget}>Target: ₹2.85L</Text>
+              <View style={styles.miniProgressTrack}>
+                <View style={[styles.miniProgressFill, { width: '100%' }]} />
+              </View>
+            </View>
+
+            <View style={styles.quarterCard}>
+              <View style={styles.quarterTop}>
+                <Text style={styles.quarterName}>Q2</Text>
+                <View style={styles.quarterBadgeMetBox}>
+                  <Text style={styles.quarterBadgeMet}>112%</Text>
+                </View>
+              </View>
+              <Text style={styles.quarterAmount}>₹3.42L</Text>
+              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
+              <View style={styles.miniProgressTrack}>
+                <View style={[styles.miniProgressFill, { width: '100%' }]} />
+              </View>
+            </View>
+
+            <View style={[styles.quarterCard, styles.quarterCardActive]}>
+              <View style={styles.quarterTop}>
+                <Text style={[styles.quarterName, styles.quarterNameActive]}>Q3 (Active)</Text>
+                <View style={styles.quarterBadgePacingBox}>
+                  <Text style={styles.quarterBadgePacing}>128%</Text>
+                </View>
+              </View>
+              <Text style={styles.quarterAmount}>₹3.89L</Text>
+              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
+              <View style={styles.miniProgressTrack}>
+                <View style={[styles.miniProgressFill, { width: '92%', backgroundColor: '#0f172a' }]} />
+              </View>
+            </View>
+
+            <View style={styles.quarterCard}>
+              <View style={styles.quarterTop}>
+                <Text style={styles.quarterName}>Q4 (Est)</Text>
+                <View style={styles.quarterBadgeProjBox}>
+                  <Text style={styles.quarterBadgeProj}>108%</Text>
+                </View>
+              </View>
+              <Text style={styles.quarterAmount}>₹3.30L</Text>
+              <Text style={styles.quarterTarget}>Target: ₹3.05L</Text>
+              <View style={styles.miniProgressTrack}>
+                <View style={[styles.miniProgressFill, { width: '75%', backgroundColor: '#94a3b8' }]} />
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Forecast Health & Runway Metrics Footer */}
+        <View style={styles.healthFooter}>
+          <View style={styles.healthCol}>
+            <Text style={styles.healthLabel}>Pipeline Health</Text>
+            <Text style={styles.healthValueGreen}>94.8% • Strong</Text>
+          </View>
+          <View style={styles.healthColDivider} />
+          <View style={styles.healthCol}>
+            <Text style={styles.healthLabel}>Runway Velocity</Text>
+            <Text style={styles.healthValue}>+14.2% MoM</Text>
+          </View>
+          <View style={styles.healthColDivider} />
+          <View style={styles.healthCol}>
+            <Text style={styles.healthLabel}>Forecast Confidence</Text>
+            <Text style={styles.healthValue}>High (AI Pacing)</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -335,5 +415,143 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#2563eb',
+  },
+  quarterlySection: {
+    marginTop: 14,
+    gap: 8,
+  },
+  sectionHeaderTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    fontFamily: THEME.fontFamily.semibold,
+  },
+  quarterlyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  quarterCard: {
+    flex: 1,
+    minWidth: 100,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 6,
+    padding: 10,
+    gap: 3,
+  },
+  quarterCardActive: {
+    borderColor: '#0f172a',
+    backgroundColor: '#f8fafc',
+  },
+  quarterTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  quarterName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  quarterNameActive: {
+    color: '#0f172a',
+    fontWeight: '700',
+  },
+  quarterBadgeMetBox: {
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  quarterBadgeMet: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#047857',
+  },
+  quarterBadgePacingBox: {
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  quarterBadgePacing: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#2563eb',
+  },
+  quarterBadgeProjBox: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  quarterBadgeProj: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  quarterAmount: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  quarterTarget: {
+    fontSize: 10,
+    color: '#64748b',
+  },
+  miniProgressTrack: {
+    height: 4,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 2,
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  miniProgressFill: {
+    height: '100%',
+    backgroundColor: '#10b981',
+    borderRadius: 2,
+  },
+  healthFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 12,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  healthCol: {
+    flex: 1,
+    minWidth: 90,
+  },
+  healthColDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#e2e8f0',
+  },
+  healthLabel: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  healthValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 1,
+  },
+  healthValueGreen: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#047857',
+    marginTop: 1,
   },
 });
