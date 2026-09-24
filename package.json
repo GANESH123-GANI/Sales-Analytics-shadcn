@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node backend/src/server.js",
     "web": "cd mobile && npx expo start --web",
-    "build": "cd mobile && npx expo export -p web",
+    "build": "node scripts/build.js",
     "serve": "node backend/src/server.js",
     "backend": "cd backend && npm start",
     "mobile": "cd mobile && npx expo start",
