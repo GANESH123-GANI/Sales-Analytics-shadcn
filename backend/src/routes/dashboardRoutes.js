@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
+const { authMiddleware } = require('../middleware/authMiddleware');
+
+// All dashboard endpoints require valid user authentication
+router.use(authMiddleware);
 
 // High-performance single-trip combined dashboard
 router.get('/all', dashboardController.getDashboardAll);

@@ -44,6 +44,11 @@ if (isPostgres) {
 
   const pgPool = new Pool(poolOptions);
 
+  // Prevent unexpected idle client disconnections from crashing the server
+  pgPool.on('error', (err) => {
+    console.warn('[Database Pool Notice] Idle client disconnected or reset:', err.message);
+  });
+
   /**
    * Helper that translates MySQL syntax to PostgreSQL syntax:
    * 1. Replaces ? placeholders with $1, $2, ...
@@ -114,7 +119,10 @@ if (isPostgres) {
     async query(sql, params = []) {
       const adaptedSql = adaptSqlForPostgres(sql);
       const res = await pgPool.query(adaptedSql, params);
-      return [normalizeRows(res.rows), res.fields];
+      const rows = normalizeRows(res.rows) || [];
+      rows.rowCount = res.rowCount;
+      rows.affectedRows = res.rowCount;
+      return [rows, res.fields];
     },
     async getConnection() {
       const client = await pgPool.connect();
@@ -122,7 +130,10 @@ if (isPostgres) {
         async query(sql, params = []) {
           const adaptedSql = adaptSqlForPostgres(sql);
           const res = await client.query(adaptedSql, params);
-          return [normalizeRows(res.rows), res.fields];
+          const rows = normalizeRows(res.rows) || [];
+          rows.rowCount = res.rowCount;
+          rows.affectedRows = res.rowCount;
+          return [rows, res.fields];
         },
         release() {
           client.release();

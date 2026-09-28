@@ -4,16 +4,18 @@
   "private": true,
   "scripts": {
     "start": "node backend/src/server.js",
-    "web": "cd mobile && npx expo start --web",
+    "web": "cd frontend && npx expo start --web",
+    "dev": "cd frontend && npx expo start --web",
+    "frontend": "cd frontend && npx expo start --web",
     "build": "node scripts/build.js",
     "serve": "node backend/src/server.js",
     "backend": "cd backend && npm start",
-    "mobile": "cd mobile && npx expo start",
     "start:backend": "cd backend && npm start",
-    "start:web": "cd mobile && npx expo start --web",
-    "start:mobile": "cd mobile && npx expo start",
+    "start:web": "cd frontend && npx expo start --web",
+    "db:migrate": "cd backend && node migrate.js",
     "db:setup": "cd backend && npm run db:setup",
-    "db:neon": "cd backend && npm run db:neon"
+    "db:view": "node scripts/view_db.js",
+    "test:api": "cd backend && node test_api.js"
   },
   "dependencies": {
     "react-dom": "19.2.3"

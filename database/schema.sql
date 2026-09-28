@@ -1,5 +1,5 @@
 -- ==========================================================
--- Sales Analytics Database Schema
+-- Sales Analytics Multi-User Database Schema
 -- Database: sales_analytics
 -- ==========================================================
 
@@ -18,17 +18,23 @@ DROP TABLE IF EXISTS `products`;
 DROP TABLE IF EXISTS `users`;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 1. Users Table
+-- 1. Users Table (Role-based: admin & user, with active/inactive status)
 CREATE TABLE `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(150) NOT NULL UNIQUE,
-  `password` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(50) NOT NULL DEFAULT 'sales_manager',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  `password_hash` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NULL,
+  `role` ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+  `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_user_email` (`email`),
+  INDEX `idx_user_role` (`role`),
+  INDEX `idx_user_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Products Table
+-- 2. Products Table (Shared reference catalog)
 CREATE TABLE `products` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(150) NOT NULL,
@@ -50,29 +56,34 @@ CREATE TABLE `customers` (
   INDEX `idx_customer_region` (`region`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Sales Table
+-- 4. Shared Sales Table (Isolated by user_id)
 CREATE TABLE `sales` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `customer_id` INT NOT NULL,
-  `sale_date` DATE NOT NULL,
-  `sale_year`  SMALLINT GENERATED ALWAYS AS (YEAR(`sale_date`))  VIRTUAL,
-  `sale_month` TINYINT  GENERATED ALWAYS AS (MONTH(`sale_date`)) VIRTUAL,
+  `user_id` INT NOT NULL,
+  `customer_id` INT NULL,
+  `customer_name` VARCHAR(120) NOT NULL DEFAULT 'Direct Customer',
+  `product_name` VARCHAR(150) NOT NULL,
+  `category` VARCHAR(100) NOT NULL DEFAULT 'General',
+  `quantity` INT NOT NULL DEFAULT 1,
+  `price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
   `total_amount` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+  `sale_date` DATE NOT NULL,
+  `region` VARCHAR(80) NOT NULL DEFAULT 'General',
   `status` ENUM('Completed', 'Pending', 'Cancelled') NOT NULL DEFAULT 'Completed',
-  `region` VARCHAR(80) NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT `fk_sales_customer`
-    FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_sales_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE,
-  INDEX `idx_sale_date`   (`sale_date`),
-  INDEX `idx_sale_year`   (`sale_year`),
-  INDEX `idx_sale_month`  (`sale_month`),
-  INDEX `idx_sale_ym`     (`sale_year`, `sale_month`),
-  INDEX `idx_sale_status` (`status`),
-  INDEX `idx_sale_region` (`region`)
+  INDEX `idx_sale_user_id`  (`user_id`),
+  INDEX `idx_sale_user_date`(`user_id`, `sale_date`),
+  INDEX `idx_sale_date`     (`sale_date`),
+  INDEX `idx_sale_status`   (`status`),
+  INDEX `idx_sale_region`   (`region`),
+  INDEX `idx_sale_category` (`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 5. Sale Items Table
+-- 5. Sale Items Table (Optional Line-Item linkage)
 CREATE TABLE `sale_items` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `sale_id` INT NOT NULL,
